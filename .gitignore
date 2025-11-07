@@ -1,0 +1,55 @@
+# Node modules
+node_modules/
+**/node_modules/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Env files (do NOT commit secrets)
+.env
+.env.*
+**/.env
+**/.env.*
+
+# Build outputs
+dist/
+build/
+coverage/
+coverage-final.json
+
+# Editor directories and files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary
+.tmp
+*.temp
+
+# Prisma: ignore query engine native binaries (heavy, platform-specific)
+server/generated/prisma/libquery_engine-*.so.node
+server/generated/prisma/*.so.node
+
+# Docker
+.Dockerfile.swp
+docker-compose.override.yml
+
+# Misc
+*.log

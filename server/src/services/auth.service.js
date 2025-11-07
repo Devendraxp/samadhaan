@@ -1,0 +1,78 @@
+import bcrypt from "bcrypt";
+import {
+  createUser,
+  getUserByEmail,
+  updateRefreshToken,
+} from "./user.service.js";
+import {
+  generateAccessToken,
+  generateRefreshToken,
+} from "../utils/RefreshTokenAndAccessToken.js";
+import { ApiError } from "../utils/ApiError.js";
+const SALT_ROUND = process.env.SALT_ROUND;
+
+const registerUser = async (user) => {
+  const { name, email, password } = user;
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  user = {
+    name,
+    email,
+    password: hashedPassword,
+    role: "STUDENT",
+  };
+
+  const registeredUser = await createUser(user);
+
+  const accessToken = await generateAccessToken(registeredUser);
+  const refreshToken = await generateRefreshToken(registeredUser);
+
+  const updatedUser = await updateRefreshToken({
+    id: registeredUser.id,
+    refreshToken,
+  });
+
+  delete updatedUser.password;
+  delete updatedUser.refreshToken;
+
+  return {
+    user: updatedUser,
+    accessToken,
+    refreshToken,
+  };
+};
+
+const loginUser = async (user) => {
+  const { email, password } = user;
+
+  const fetchedUser = await getUserByEmail(email);
+  const isPasswordCorrect = await bcrypt.compare(
+    password,
+    fetchedUser.password
+  );
+
+  if (!isPasswordCorrect) {
+    throw new ApiError(401, "Password is incorrect.");
+  }
+
+  const accessToken = await generateAccessToken(fetchedUser);
+  const refreshToken = await generateRefreshToken(fetchedUser);
+
+  const updatedUser = await updateRefreshToken({
+    id: fetchedUser.id,
+    refreshToken,
+  });
+
+  delete updatedUser.password;
+  delete updatedUser.refreshToken;
+
+  return {
+    user: updatedUser,
+    accessToken,
+    refreshToken,
+  };
+};
+
+export { registerUser, loginUser };
+

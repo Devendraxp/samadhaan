@@ -1,0 +1,21 @@
+@BaseURL=http://localhost:3000/api/v1
+
+
+POST {{BaseURL}}/auth/register?source=web HTTP/1.1
+content-type: application/json
+
+{
+    "name" : "Munda",
+    "email" : "munda@gmail.com",
+    "password" : "tempPassword"
+}
+
+###
+
+POST {{BaseURL}}/auth/login?source=web HTTP/1.1
+content-type: application/json
+
+{
+    "email" : "munda@gmail.com",
+    "password" : "tempPassword"
+}
