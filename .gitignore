@@ -16,7 +16,6 @@ pids
 
 # Env files (do NOT commit secrets)
 .env
-.env.*
 **/.env
 **/.env.*
 
