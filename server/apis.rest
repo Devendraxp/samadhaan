@@ -19,3 +19,12 @@ content-type: application/json
     "email" : "munda@gmail.com",
     "password" : "tempPassword"
 }
+
+
+###
+ GET {{BaseURL}}/user/profile?source=web HTTP/1.1
+ content-type: application/json
+
+
+ ###profile with token
+ GET {{BaseURL}}/user/profile?source=web HTTP/1.1

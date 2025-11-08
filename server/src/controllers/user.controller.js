@@ -1,9 +1,11 @@
 import {findUserById} from "../services/user.service.js";
+import { ApiResponse } from "../utils/ApiResponse.js";
 
 const getProfile = async( req, res, next) =>{
-  const userId = req.user.id;
+  console.log(req.user);
+  const userId = req.user.sub;
   const userData = await findUserById(userId);
-  res.json(userData);
+  return res.status(200).json(new ApiResponse(200, userData, "User profile fetched successfully."));
 }
 
 
