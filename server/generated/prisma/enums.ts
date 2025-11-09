@@ -11,7 +11,47 @@
 
 export const UserRole = {
   STUDENT: 'STUDENT',
-  ADMIN: 'ADMIN'
+  ADMIN: 'ADMIN',
+  MESS: 'MESS',
+  INTERNET: 'INTERNET',
+  CLEANING: 'CLEANING',
+  WATER: 'WATER',
+  TRANSPORT: 'TRANSPORT'
 } as const
 
 export type UserRole = (typeof UserRole)[keyof typeof UserRole]
+
+
+export const AccountStatus = {
+  ACTIVE: 'ACTIVE',
+  VIEW_ONLY: 'VIEW_ONLY',
+  DEACTIVATED: 'DEACTIVATED',
+  DELETED: 'DELETED'
+} as const
+
+export type AccountStatus = (typeof AccountStatus)[keyof typeof AccountStatus]
+
+
+export const ComplaintDomain = {
+  MESS: 'MESS',
+  INTERNET: 'INTERNET',
+  CLEANING: 'CLEANING',
+  WATER: 'WATER',
+  TRANSPORT: 'TRANSPORT'
+} as const
+
+export type ComplaintDomain = (typeof ComplaintDomain)[keyof typeof ComplaintDomain]
+
+
+export const ComplaintStatus = {
+  CREATED: 'CREATED',
+  REVIEWED: 'REVIEWED',
+  ASSIGNED: 'ASSIGNED',
+  WORK_IN_PROGRESS: 'WORK_IN_PROGRESS',
+  RESOLVED: 'RESOLVED',
+  ARCHIVED: 'ARCHIVED',
+  CANCELED: 'CANCELED',
+  DELETED: 'DELETED'
+} as const
+
+export type ComplaintStatus = (typeof ComplaintStatus)[keyof typeof ComplaintStatus]

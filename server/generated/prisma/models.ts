@@ -9,4 +9,6 @@
  * 🟢 You can import this file directly.
  */
 export type * from './models/User.ts'
+export type * from './models/Complaint.ts'
+export type * from './models/Response.ts'
 export type * from './commonInputTypes.ts'
