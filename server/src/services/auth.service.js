@@ -9,6 +9,8 @@ import {
   generateRefreshToken,
 } from "../utils/RefreshTokenAndAccessToken.js";
 import { ApiError } from "../utils/ApiError.js";
+
+
 const SALT_ROUND = process.env.SALT_ROUND;
 
 const registerUser = async (user) => {

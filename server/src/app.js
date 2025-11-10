@@ -14,11 +14,15 @@ app.use(cookieParser());
 
 import authRouter from "./routes/auth.route.js";
 import userRouter from "./routes/user.route.js";
+import complaintRouter from "./routes/complaint.route.js"
+import cloudinaryRouter from "./routes/cloudinary.route.js";
+// import responseRouter from "./routes/response.routes.js";
 
 app.use("/api/v1/user", userRouter);
-
 app.use("/api/v1/auth", authRouter);
-
+app.use("/api/v1/complaint",complaintRouter);
+app.use("/api/v1/cloudinary",cloudinaryRouter);
+// app.use("/api/v1/response",responseRouter);
 
 const specs = swaggerJsdoc(swaggerOptions);
 app.use(

@@ -23,7 +23,7 @@ const config: runtime.GetPrismaClientConfig = {
       "value": "prisma-client"
     },
     "output": {
-      "value": "/home/dev/coding/samadhaan/server/generated/prisma",
+      "value": "/home/om/Desktop/Backend/DBMS_PROJECT/server/generated/prisma",
       "fromEnvVar": null
     },
     "config": {
@@ -37,7 +37,7 @@ const config: runtime.GetPrismaClientConfig = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "/home/dev/coding/samadhaan/server/prisma/schema.prisma",
+    "sourceFilePath": "/home/om/Desktop/Backend/DBMS_PROJECT/server/prisma/schema.prisma",
     "isCustomOutput": true
   },
   "relativePath": "../../prisma",
@@ -47,6 +47,7 @@ const config: runtime.GetPrismaClientConfig = {
     "db"
   ],
   "activeProvider": "postgresql",
+  "postinstall": false,
   "inlineDatasources": {
     "db": {
       "url": {
@@ -57,7 +58,7 @@ const config: runtime.GetPrismaClientConfig = {
   },
   "inlineSchema": "generator client {\n  provider = \"prisma-client\"\n  output   = \"../generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel User {\n  id           String        @id @default(uuid())\n  name         String?\n  email        String        @unique\n  password     String\n  role         UserRole      @default(STUDENT)\n  status       AccountStatus @default(ACTIVE)\n  refreshToken String?\n  complaints   Complaint[]\n  responses    Response[]\n  createdAt    DateTime      @default(now())\n  updatedAt    DateTime      @updatedAt()\n}\n\nmodel Complaint {\n  id           String          @id @default(uuid())\n  subject      String\n  description  String\n  mediaLink    String?\n  domain       ComplaintDomain\n  complainer   User            @relation(fields: [complainerId], references: [id])\n  complainerId String\n  anonymous    Boolean         @default(false)\n  status       ComplaintStatus @default(CREATED)\n  responses    Response[]\n  createdAt    DateTime        @default(now())\n  updatedAt    DateTime        @updatedAt()\n\n  @@index([domain])\n  @@index([status])\n  @@index([complainerId])\n}\n\nmodel Response {\n  id          String    @id @default(uuid())\n  complaint   Complaint @relation(fields: [complaintId], references: [id])\n  complaintId String\n  content     String\n  mediaLink   String?\n  responder   User      @relation(fields: [responderId], references: [id])\n  responderId String\n  isVisible   Boolean   @default(true)\n  createdAt   DateTime  @default(now())\n  updatedAt   DateTime  @updatedAt()\n\n  @@index([complaintId])\n  @@index([responderId])\n}\n\nenum UserRole {\n  STUDENT\n  ADMIN\n  MESS\n  INTERNET\n  CLEANING\n  WATER\n  TRANSPORT\n}\n\nenum AccountStatus {\n  ACTIVE\n  VIEW_ONLY\n  DEACTIVATED\n  DELETED\n}\n\nenum ComplaintDomain {\n  MESS\n  INTERNET\n  CLEANING\n  WATER\n  TRANSPORT\n}\n\nenum ComplaintStatus {\n  CREATED\n  REVIEWED\n  ASSIGNED\n  WORK_IN_PROGRESS\n  RESOLVED\n  ARCHIVED\n  CANCELED\n  DELETED\n}\n",
   "inlineSchemaHash": "3f96c7465bccd22cc8d1c9d18e7cc003d3a713978adb5136cb591536cb7bf5b1",
-  "copyEngine": false,
+  "copyEngine": true,
   "runtimeDataModel": {
     "models": {},
     "enums": {},

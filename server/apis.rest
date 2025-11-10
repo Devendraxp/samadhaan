@@ -1,5 +1,5 @@
 @BaseURL=http://localhost:3000/api/v1
-
+@TOKEN ="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIzYzIwMGM1MC0yMzBkLTQxMTgtOTc1Yi1iMGM3NGFjZDQwMjMiLCJuYW1lIjoiTXVuZGEiLCJlbWFpbCI6Im11bmRhQGdtYWlsLmNvbSIsInJvbGUiOiJTVFVERU5UIiwiaWF0IjoxNzYyNzYwMTcwLCJleHAiOjE3NjI3NjM3NzB9.LmfJuapV4TiHKPH0CXUj3pzmcsHPph2R7uluaCYVK2A"
 
 POST {{BaseURL}}/auth/register?source=web HTTP/1.1
 content-type: application/json
@@ -22,9 +22,24 @@ content-type: application/json
 
 
 ###
- GET {{BaseURL}}/user/profile?source=web HTTP/1.1
- content-type: application/json
+POST {{BaseURL}}/complaint/complaints?source=web HTTP/1.1
+authentication: Bearer {{TOKEN}}
+content-type: application/json
+ {
+    "subject": "Test complaint from REST file",
+    "description": "Testing getAll/get endpoints",
+    "domain": "INTERNET",
+    "mediaLink": "https://www.pexels.com/photo/smiling-woman-on-man-in-winter-19975990/",
+    "anonymous": false
+ }
+
+###
+GET {{BaseURL}}/user/profile?source=web HTTP/1.1
+content-type: application/json
 
 
  ###profile with token
- GET {{BaseURL}}/user/profile?source=web HTTP/1.1
+GET {{BaseURL}}/user/profile?source=web HTTP/1.1
+
+
+ ###
