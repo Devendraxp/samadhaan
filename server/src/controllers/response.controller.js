@@ -1,42 +1,148 @@
-import { createResponse,getAllResponses, getComplaintResponses } from "../services/response.service.js"
+import * as responseService from "../services/response.service.js";
+import { ApiError } from "../utils/ApiError.js";
+import { ApiResponse } from "../utils/ApiResponse.js";
 
-const createResponseController = async(req,res,next)=>{
-    try {
-        const response = {
-            ...req.body,
-            responderId : req.user?.sub
-        };
-        if(!response.responderId){
-            return res.status(400).json({message : "responderId is required"});
-        }
-        const created = await createResponse(response);
-        return res.status(201).json({message : "Response created successfully" , data : created});
-
-    } catch (error) {
-        return next(error);
+const createResponse = async (req, res, next) => {
+  try {
+    const responderId = req.user?.sub;
+    if (!responderId) {
+      throw new ApiError(401, "Unauthorized");
     }
-}
 
-const getAllResponsesController = async(req,res,next)=>{
-    try {
-        const responses = await getAllResponses();
-        return res.status(201).json({message : "Successfully got all the responses from db." , data : responses});
-    } catch (error) {
-        return next(err)
+    const { complaintId, content, mediaLink, isVisible=true } = req.body || {};
+    if (!complaintId) {
+      throw new ApiError(400, "complaintId is required");
     }
-}
-
-const getComplaintResponses = async(req,res,next)=>{
-    try {
-        const {id} = req.params;
-        if(!id){
-            return res.status(400).json({message : "complaintId is required"});
-        }
-
-
-    } catch (error) {
-        next(error);
+    if (!content) {
+      throw new ApiError(400, "content is required");
     }
-}
 
-export {createResponseController,getAllResponsesController}
+    const payload = {
+      complaintId: String(complaintId),
+      content: content.trim(),
+      mediaLink,
+      responderId,
+      isVisible,
+    };
+
+    const created = await responseService.createResponse(payload);
+    return res
+      .status(201)
+      .json(new ApiResponse(201, created, "Response created successfully."));
+  } catch (error) {
+    return next(error);
+  }
+};
+
+const getResponseDetailsById = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    if (!id) throw new ApiError(400, "response id is required");
+
+    const details = await responseService.getResponseDetailsById(id);
+    return res
+      .status(200)
+      .json(new ApiResponse(200, details, "Response details fetched."));
+  } catch (error) {
+    return next(error);
+  }
+};
+
+const getAllResponses = async (req, res, next) => {
+  try {
+    const responses = await responseService.getAllResponses();
+    return res
+      .status(200)
+      .json(new ApiResponse(200, responses, "All responses fetched."));
+  } catch (error) {
+    return next(error);
+  }
+};
+
+const getComplaintResponses = async (req, res, next) => {
+  try {
+    const { id: complaintId } = req.params;
+    if (!complaintId) throw new ApiError(400, "complaintId is required");
+
+    const responses = await responseService.getComplaintResponses(complaintId);
+    return res
+      .status(200)
+      .json(new ApiResponse(200, responses, "Complaint responses fetched."));
+  } catch (error) {
+    return next(error);
+  }
+};
+
+const getUserResponses = async (req, res, next) => {
+  try {
+    const responderId = req.user?.sub;
+    if (!responderId) {
+      throw new ApiError(401, "Unauthorized");
+    }
+
+    const responses = await responseService.getUserResponses(responderId);
+    return res
+      .status(200)
+      .json(new ApiResponse(200, responses, "User responses fetched."));
+  } catch (error) {
+    return next(error);
+  }
+};
+
+const updateResponse = async (req, res, next) => {
+  try {
+    const { id: paramId } = req.params;
+    const { id: bodyId, ...rest } = req.body || {};
+    const id = paramId || bodyId;
+
+    if (!id) throw new ApiError(400, "response id is required for update");
+
+    const payload = {
+      id,
+      content:
+        typeof rest.content === "string" ? rest.content.trim() : rest.content,
+      mediaLink:
+        typeof rest.mediaLink === "string"
+          ? rest.mediaLink.trim()
+          : rest.mediaLink,
+      isVisible:
+        typeof rest.isVisible === "boolean" ? rest.isVisible : undefined,
+      // optionally allow reassignment if provided
+      complaintId:
+        typeof rest.complaintId === "string" ? rest.complaintId : undefined,
+      responderId:
+        typeof rest.responderId === "string" ? rest.responderId : undefined,
+    };
+
+    const updated = await responseService.updateResponse(payload);
+    return res
+      .status(200)
+      .json(new ApiResponse(200, updated, "Response updated."));
+  } catch (error) {
+    return next(error);
+  }
+};
+
+const deleteResponse = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    if (!id) throw new ApiError(400, "response id is required for deletion");
+
+    const result = await responseService.deleteResponse(id);
+    return res
+      .status(200)
+      .json(new ApiResponse(200, result, "Response deleted."));
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export {
+  createResponse,
+  getResponseDetailsById,
+  getAllResponses,
+  getComplaintResponses,
+  getUserResponses,
+  updateResponse,
+  deleteResponse,
+};

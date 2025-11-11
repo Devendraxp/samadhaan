@@ -14,25 +14,21 @@ app.use(cookieParser());
 
 import authRouter from "./routes/auth.route.js";
 import userRouter from "./routes/user.route.js";
-import complaintRouter from "./routes/complaint.route.js"
+import complaintRouter from "./routes/complaint.route.js";
+import responseRouter from "./routes/response.route.js";
 import cloudinaryRouter from "./routes/cloudinary.route.js";
-// import responseRouter from "./routes/response.routes.js";
 import notificationRouter from "./routes/notification.route.js";
 
 app.use("/api/v1/notification", notificationRouter);
 
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/auth", authRouter);
-app.use("/api/v1/complaint",complaintRouter);
-app.use("/api/v1/cloudinary",cloudinaryRouter);
-// app.use("/api/v1/response",responseRouter);
+app.use("/api/v1/complaint", complaintRouter);
+app.use("/api/v1/cloudinary", cloudinaryRouter);
+app.use("/api/v1/response",responseRouter);
 
 const specs = swaggerJsdoc(swaggerOptions);
-app.use(
-  "/api-docs",
-  swaggerUi.serve,
-  swaggerUi.setup(specs)
-);
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 
 // it must be after all routes
 app.use((err, req, res, next) => {

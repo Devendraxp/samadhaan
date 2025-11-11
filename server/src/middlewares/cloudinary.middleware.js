@@ -7,7 +7,6 @@ const  uploadsingle = (fieldname) => [
     upload.single(fieldname), 
         (req,res,next) =>{
             if(!req.file) {
-                console.log("file is not provided");
                 return next();
             }
             req.body.mediaLink = req.file?.path??  req.file?.secure_url ?? req.file?.url ?? null;
