@@ -17,6 +17,9 @@ import userRouter from "./routes/user.route.js";
 import complaintRouter from "./routes/complaint.route.js"
 import cloudinaryRouter from "./routes/cloudinary.route.js";
 // import responseRouter from "./routes/response.routes.js";
+import notificationRouter from "./routes/notification.route.js";
+
+app.use("/api/v1/notification", notificationRouter);
 
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/auth", authRouter);
@@ -37,5 +40,7 @@ app.use((err, req, res, next) => {
   const message = err.message || "Internal server error";
   res.status(statusCode).json({ success: false, message });
 });
+
+
 
 export default app;

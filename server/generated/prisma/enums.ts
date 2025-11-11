@@ -55,3 +55,12 @@ export const ComplaintStatus = {
 } as const
 
 export type ComplaintStatus = (typeof ComplaintStatus)[keyof typeof ComplaintStatus]
+
+
+export const NotificationType = {
+  ALERT: 'ALERT',
+  UPDATE: 'UPDATE',
+  ANNOUNCEMENT: 'ANNOUNCEMENT'
+} as const
+
+export type NotificationType = (typeof NotificationType)[keyof typeof NotificationType]

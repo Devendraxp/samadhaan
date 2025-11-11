@@ -20,6 +20,8 @@ model User {
   responses    Response[]
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt()
+
+  notifications Notification[]
 }
 
 model Complaint {
@@ -91,4 +93,25 @@ enum ComplaintStatus {
   ARCHIVED
   CANCELED
   DELETED
+}
+
+model Notification{
+  id         String     @id @default(uuid())
+  user        User       @relation(fields: [userId], references: [id])
+  userId      String
+  title       String
+  description String
+  domain      String?
+  type       NotificationType
+  mediaLink   String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt()
+
+  @@index([userId])
+}
+
+enum NotificationType {
+  ALERT
+  UPDATE
+  ANNOUNCEMENT
 }
