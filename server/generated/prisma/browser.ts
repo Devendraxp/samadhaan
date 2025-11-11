@@ -32,3 +32,8 @@ export type Complaint = Prisma.ComplaintModel
  * 
  */
 export type Response = Prisma.ResponseModel
+/**
+ * Model Notification
+ * 
+ */
+export type Notification = Prisma.NotificationModel
