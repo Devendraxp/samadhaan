@@ -4,8 +4,8 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 
 const createComplaint = async (req, res, next) => {
   try {
-    const { subject, description, mediaLink, domain, anonymous = false } = req.body || {};
-
+    const { subject, description, mediaLink, domain, } = req.body || {};
+    const anonymous = req.body.anonymous === "true";
     if (!subject || !description || !domain) {
       throw new ApiError(400, "Provide all required fields: subject, description, domain");
     }
