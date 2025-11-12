@@ -24,11 +24,13 @@ const register = async (req, res, next) => {
     const registeredUser = data.user;
     const { accessToken, refreshToken } = data;
 
+    const isProd = process.env.NODE_ENV === "production";
     const options = {
       httpOnly: true,
-      secure: true,
+      secure: isProd, // false in dev so cookie sets over http://localhost
+      sameSite: isProd ? "none" : "lax",
+      path: "/",
     };
-
     if (source == "web") {
       return res
         .status(200)
@@ -37,11 +39,7 @@ const register = async (req, res, next) => {
         .json(
           new ApiResponse(
             200,
-            {
-              user: registeredUser,
-              accessToken,
-              refreshToken,
-            },
+            { user: registeredUser, accessToken, refreshToken },
             "User registered successfully."
           )
         );
@@ -83,11 +81,13 @@ const login = async (req, res, next) => {
     const loggedInUser = data.user;
     const { accessToken, refreshToken } = data;
 
+    const isProd = process.env.NODE_ENV === "production";
     const options = {
       httpOnly: true,
-      secure: true,
+      secure: isProd,
+      sameSite: isProd ? "none" : "lax",
+      path: "/",
     };
-
     if (source == "web") {
       return res
         .status(200)
@@ -96,11 +96,7 @@ const login = async (req, res, next) => {
         .json(
           new ApiResponse(
             200,
-            {
-              user: loggedInUser,
-              accessToken,
-              refreshToken,
-            },
+            { user: loggedInUser, accessToken, refreshToken },
             "User logged in successfully."
           )
         );

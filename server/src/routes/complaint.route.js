@@ -12,7 +12,7 @@ import { authenticate } from "../middlewares/auth.middleware.js";
 
 const router = Router();
 
-// Order matters: /me before /:id
+// prefix is /complaint
 router.post("/", authenticate, ...uploadsingle("file"), createComplaint);
 router.get("/", authenticate, getAllComplaints);
 router.get("/me", authenticate, getUserComplaints);

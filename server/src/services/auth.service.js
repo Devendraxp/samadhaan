@@ -49,6 +49,9 @@ const loginUser = async (user) => {
   const { email, password } = user;
 
   const fetchedUser = await getUserByEmail(email);
+  if(!fetchedUser){
+    throw new ApiError(400, `User with email: ${email} does not exist !`)
+  }
   const isPasswordCorrect = await bcrypt.compare(
     password,
     fetchedUser.password

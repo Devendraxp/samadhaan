@@ -13,7 +13,10 @@ const createComplaint = async (complaint) => {
   } = complaint || {};
 
   if (!subject || !description || !domain || !complainerId) {
-    throw new ApiError(400, "Provide all required fields: subject, description, domain, complainerId");
+    throw new ApiError(
+      400,
+      "Provide all required fields: subject, description, domain, complainerId"
+    );
   }
 
   const createdComplaint = await prisma.complaint.create({
@@ -35,7 +38,7 @@ const createComplaint = async (complaint) => {
       status: true,
       createdAt: true,
       updatedAt: true,
-      complainer: { select: { id: true, name: true } },
+      complainer: { select: { name: true, email: true, role: true } },
     },
   });
 
@@ -60,10 +63,7 @@ const getComplaintDetailsById = async (complaintId) => {
       createdAt: true,
       updatedAt: true,
       complainer: {
-        select: {
-          id: true,
-          name: true,
-        },
+        select: { name: true, email: true, role: true },
       },
       responses: {
         select: {
@@ -73,10 +73,7 @@ const getComplaintDetailsById = async (complaintId) => {
           createdAt: true,
           responderId: true,
           responder: {
-            select: {
-              id: true,
-              name: true,
-            },
+            select: { name: true, email: true, role: true },
           },
         },
         orderBy: { createdAt: "asc" },
@@ -104,7 +101,7 @@ const getAllComplaints = async () => {
       status: true,
       createdAt: true,
       updatedAt: true,
-      complainer: { select: { id: true, name: true } },
+      complainer: { select: { name: true, email: true, role: true } },
       responses: {
         select: {
           id: true,
@@ -112,7 +109,7 @@ const getAllComplaints = async () => {
           mediaLink: true,
           createdAt: true,
           responderId: true,
-          responder: { select: { id: true, name: true } },
+          responder: { select: { name: true, email: true, role: true } },
         },
         orderBy: { createdAt: "asc" },
       },
@@ -150,7 +147,7 @@ const getUserComplaints = async (user) => {
       status: true,
       createdAt: true,
       updatedAt: true,
-      complainer: { select: { id: true, name: true } },
+      complainer: { select: { name: true, email: true, role: true } },
       responses: {
         select: {
           id: true,
@@ -158,7 +155,7 @@ const getUserComplaints = async (user) => {
           mediaLink: true,
           createdAt: true,
           responderId: true,
-          responder: { select: { id: true, name: true } },
+          responder: { select: { name: true, email: true, role: true } },
         },
         orderBy: { createdAt: "asc" },
       },
@@ -184,7 +181,10 @@ const updateComplaint = async (newComplaint) => {
     description: newComplaint.description ?? existing.description,
     mediaLink: newComplaint.mediaLink ?? existing.mediaLink,
     domain: newComplaint.domain ?? existing.domain,
-    anonymous: typeof newComplaint.anonymous === "boolean" ? newComplaint.anonymous : existing.anonymous,
+    anonymous:
+      typeof newComplaint.anonymous === "boolean"
+        ? newComplaint.anonymous
+        : existing.anonymous,
     status: newComplaint.status ?? existing.status,
   };
 
@@ -205,7 +205,7 @@ const updateComplaint = async (newComplaint) => {
       status: true,
       createdAt: true,
       updatedAt: true,
-      complainer: { select: { id: true, name: true } },
+      complainer: { select: { name: true, email: true, role: true } },
       responses: {
         select: {
           id: true,
@@ -213,16 +213,23 @@ const updateComplaint = async (newComplaint) => {
           mediaLink: true,
           createdAt: true,
           responderId: true,
-          responder: { select: { id: true, name: true} },
+          responder: {
+            select: { name: true, email: true, role: true },
+          },
         },
         orderBy: { createdAt: "asc" },
       },
     },
   });
 
-  if (Array.isArray(newComplaint.responses) && newComplaint.responses.length > 0) {
+  if (
+    Array.isArray(newComplaint.responses) &&
+    newComplaint.responses.length > 0
+  ) {
     await Promise.all(
-      newComplaint.responses.map((r) => createResponse({ ...r, complaintId: id }))
+      newComplaint.responses.map((r) =>
+        createResponse({ ...r, complaintId: id })
+      )
     );
     return await prisma.complaint.findUnique({
       where: { id },
@@ -236,7 +243,9 @@ const updateComplaint = async (newComplaint) => {
         status: true,
         createdAt: true,
         updatedAt: true,
-        complainer: { select: { id: true, name: true } },
+        complainer: {
+          select: { name: true, email: true, role: true },
+        },
         responses: {
           select: {
             id: true,
@@ -244,7 +253,9 @@ const updateComplaint = async (newComplaint) => {
             mediaLink: true,
             createdAt: true,
             responderId: true,
-            responder: { select: { id: true, name: true } },
+            responder: {
+              select: { name: true, email: true, role: true },
+            },
           },
           orderBy: { createdAt: "asc" },
         },

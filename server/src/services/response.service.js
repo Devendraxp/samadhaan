@@ -10,7 +10,7 @@ const responseSelect = {
   updatedAt: true,
   complaintId: true,
   responderId: true,
-  responder: { select: { id: true, name: true } },
+  responder: { select: { id: true, name: true, email : true, role : true } },
 };
 
 const createResponse = async (response) => {
