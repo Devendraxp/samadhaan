@@ -1,6 +1,71 @@
 import * as complaintService from "../services/complaint.service.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
+import { STAFF_ROLES } from "../middlewares/authorization.middleware.js";
+
+const isStaffRole = (role) => role === "ADMIN" || STAFF_ROLES.includes(role);
+
+const requireViewer = (req) => {
+  if (!req.user?.sub) {
+    throw new ApiError(401, "Unauthorized");
+  }
+  return req.user;
+};
+
+const ensureCanViewComplaint = (complaint, viewer) => {
+  if (!viewer) {
+    throw new ApiError(401, "Unauthorized");
+  }
+  if (isStaffRole(viewer.role)) {
+    return true;
+  }
+  if (complaint.complainerId === viewer.sub) {
+    return true;
+  }
+  throw new ApiError(403, "You are not allowed to view this complaint.");
+};
+
+const ensureCanManageComplaint = (complaint, viewer) => {
+  if (!viewer) {
+    throw new ApiError(401, "Unauthorized");
+  }
+  if (isStaffRole(viewer.role)) {
+    return true;
+  }
+  if (complaint.complainerId === viewer.sub) {
+    return true;
+  }
+  throw new ApiError(403, "You are not allowed to modify this complaint.");
+};
+
+const sanitizeComplaint = (complaint, viewer) => {
+  if (!complaint) return complaint;
+  const sanitized = { ...complaint };
+  const viewerId = viewer?.sub;
+  const privilegedViewer = viewer ? isStaffRole(viewer.role) : false;
+
+  if (
+    sanitized.anonymous &&
+    sanitized.complainerId &&
+    !privilegedViewer &&
+    sanitized.complainerId !== viewerId
+  ) {
+    sanitized.complainer = undefined;
+  }
+
+  if (Object.prototype.hasOwnProperty.call(sanitized, "complainerId")) {
+    delete sanitized.complainerId;
+  }
+
+  return sanitized;
+};
+
+const sanitizeComplaints = (payload, viewer) => {
+  if (Array.isArray(payload)) {
+    return payload.map((complaint) => sanitizeComplaint(complaint, viewer));
+  }
+  return sanitizeComplaint(payload, viewer);
+};
 
 const createComplaint = async (req, res, next) => {
   try {
@@ -26,10 +91,11 @@ const createComplaint = async (req, res, next) => {
     console.log("working till here")
 
     const created = await complaintService.createComplaint(payload);
+    const sanitized = sanitizeComplaint(created, req.user);
 
     return res
       .status(201)
-      .json(new ApiResponse(201, created, "Complaint created successfully."));
+      .json(new ApiResponse(201, sanitized, "Complaint created successfully."));
   } catch (error) {
     return next(error);
   }
@@ -42,11 +108,14 @@ const getComplaintDetailsById = async (req, res, next) => {
       throw new ApiError(400, "Complaint id is required");
     }
 
+    const viewer = requireViewer(req);
     const details = await complaintService.getComplaintDetailsById(id);
+    ensureCanViewComplaint(details, viewer);
+    const sanitized = sanitizeComplaint(details, viewer);
 
     return res
       .status(200)
-      .json(new ApiResponse(200, details, "Complaint details fetched."));
+      .json(new ApiResponse(200, sanitized, "Complaint details fetched."));
   } catch (error) {
     return next(error);
   }
@@ -54,10 +123,12 @@ const getComplaintDetailsById = async (req, res, next) => {
 
 const getAllComplaints = async (req, res, next) => {
   try {
+  const viewer = requireViewer(req);
     const complaints = await complaintService.getAllComplaints();
+  const sanitized = sanitizeComplaints(complaints, viewer);
     return res
       .status(200)
-      .json(new ApiResponse(200, complaints, "All complaints fetched."));
+      .json(new ApiResponse(200, sanitized, "All complaints fetched."));
   } catch (error) {
     return next(error);
   }
@@ -71,10 +142,11 @@ const getUserComplaints = async (req, res, next) => {
     }
 
     const complaints = await complaintService.getUserComplaints(complainerId);
+    const sanitized = sanitizeComplaints(complaints, req.user);
 
     return res
       .status(200)
-      .json(new ApiResponse(200, complaints, "User complaints fetched."));
+      .json(new ApiResponse(200, sanitized, "User complaints fetched."));
   } catch (error) {
     return next(error);
   }
@@ -90,17 +162,17 @@ const updateComplaint = async (req, res, next) => {
       throw new ApiError(400, "Complaint id is required for update");
     }
 
-    const complainerId = req.user?.sub;
-    if (!complainerId) {
-      throw new ApiError(401, "Unauthorized");
-    }
+    const viewer = requireViewer(req);
+    const existingComplaint = await complaintService.getComplaintDetailsById(id);
+    ensureCanManageComplaint(existingComplaint, viewer);
 
-    const payload = { id, ...rest, complainerId };
+    const payload = { id, ...rest };
     const updated = await complaintService.updateComplaint(payload);
+    const sanitized = sanitizeComplaint(updated, viewer);
 
     return res
       .status(200)
-      .json(new ApiResponse(200, updated, "Complaint updated."));
+      .json(new ApiResponse(200, sanitized, "Complaint updated."));
   } catch (error) {
     return next(error);
   }
@@ -113,7 +185,8 @@ const deleteComplaint = async (req, res, next) => {
       throw new ApiError(400, "Complaint id is required for deletion");
     }
 
-    const result = await complaintService.deleteComplaint(id);
+  requireViewer(req);
+  const result = await complaintService.deleteComplaint(id);
 
     return res
       .status(200)

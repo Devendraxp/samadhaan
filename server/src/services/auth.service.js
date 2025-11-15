@@ -52,6 +52,12 @@ const loginUser = async (user) => {
   if(!fetchedUser){
     throw new ApiError(400, `User with email: ${email} does not exist !`)
   }
+  if (fetchedUser.status === "DEACTIVATED") {
+    throw new ApiError(403, "Account is deactivated. Contact your administrator.");
+  }
+  if (fetchedUser.status === "DELETED") {
+    throw new ApiError(403, "Account has been deleted. Contact your administrator.");
+  }
   const isPasswordCorrect = await bcrypt.compare(
     password,
     fetchedUser.password
