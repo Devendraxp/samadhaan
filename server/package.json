@@ -7,7 +7,9 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "dev": "node src/server.js"
+    "dev": "node src/server.js",
+    "build": "",
+    "start": "node src/server.js"
   },
   "dependencies": {
     "@prisma/client": "^6.19.0",
