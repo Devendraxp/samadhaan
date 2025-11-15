@@ -1,0 +1,118 @@
+generator client {
+  provider        = "prisma-client-js"
+  output          = "./generated/prisma"
+  previewFeatures = ["clientExtensions"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String        @id @default(uuid())
+  name         String?
+  email        String        @unique
+  password     String
+  role         UserRole      @default(STUDENT)
+  status       AccountStatus @default(ACTIVE)
+  refreshToken String?
+  complaints   Complaint[]
+  responses    Response[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt()
+
+  notifications Notification[]
+}
+
+model Complaint {
+  id           String          @id @default(uuid())
+  subject      String
+  description  String
+  mediaLink    String?
+  domain       ComplaintDomain
+  complainer   User            @relation(fields: [complainerId], references: [id])
+  complainerId String
+  anonymous    Boolean         @default(false)
+  status       ComplaintStatus @default(CREATED)
+  responses    Response[]
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt()
+
+  @@index([domain])
+  @@index([status])
+  @@index([complainerId])
+}
+
+model Response {
+  id          String    @id @default(uuid())
+  complaint   Complaint @relation(fields: [complaintId], references: [id])
+  complaintId String
+  content     String
+  mediaLink   String?
+  responder   User      @relation(fields: [responderId], references: [id])
+  responderId String
+  isVisible   Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt()
+
+  @@index([complaintId])
+  @@index([responderId])
+}
+
+enum UserRole {
+  STUDENT
+  ADMIN
+  MESS
+  INTERNET
+  CLEANING
+  WATER
+  TRANSPORT
+}
+
+enum AccountStatus {
+  ACTIVE
+  VIEW_ONLY
+  DEACTIVATED
+  DELETED
+}
+
+enum ComplaintDomain {
+  MESS
+  INTERNET
+  CLEANING
+  WATER
+  TRANSPORT
+}
+
+enum ComplaintStatus {
+  CREATED
+  REVIEWED
+  ASSIGNED
+  WORK_IN_PROGRESS
+  RESOLVED
+  ARCHIVED
+  CANCELED
+  DELETED
+}
+
+model Notification {
+  id          String           @id @default(uuid())
+  user        User             @relation(fields: [userId], references: [id])
+  userId      String
+  title       String
+  description String
+  domain      String?
+  type        NotificationType
+  mediaLink   String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt()
+
+  @@index([userId])
+}
+
+enum NotificationType {
+  ALERT
+  UPDATE
+  ANNOUNCEMENT
+}
