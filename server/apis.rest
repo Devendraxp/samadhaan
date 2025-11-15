@@ -1,4 +1,5 @@
 @BaseURL=http://localhost:3000/api/v1
+# NOTE: Append ?source=web to every request below when calling from REST clients or web browsers
 @TOKEN ="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIzYzIwMGM1MC0yMzBkLTQxMTgtOTc1Yi1iMGM3NGFjZDQwMjMiLCJuYW1lIjoiTXVuZGEiLCJlbWFpbCI6Im11bmRhQGdtYWlsLmNvbSIsInJvbGUiOiJTVFVERU5UIiwiaWF0IjoxNzYyNzYwMTcwLCJleHAiOjE3NjI3NjM3NzB9.LmfJuapV4TiHKPH0CXUj3pzmcsHPph2R7uluaCYVK2A"
 
 POST {{BaseURL}}/auth/register?source=web HTTP/1.1
