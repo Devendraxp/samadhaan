@@ -1,6 +1,45 @@
 import * as responseService from "../services/response.service.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
+import prisma from "../utils/Prisma.js";
+import { STAFF_ROLES } from "../middlewares/authorization.middleware.js";
+
+const isStaffRole = (role) => role === "ADMIN" || STAFF_ROLES.includes(role);
+
+const requireViewer = (req) => {
+  if (!req.user?.sub) {
+    throw new ApiError(401, "Unauthorized");
+  }
+  return req.user;
+};
+
+const ensureComplaintAccess = async (complaintId, viewer, errorMessage) => {
+  const complaint = await prisma.complaint.findUnique({
+    where: { id: complaintId },
+    select: { complainerId: true },
+  });
+
+  if (!complaint) {
+    throw new ApiError(404, "Complaint not found");
+  }
+
+  if (isStaffRole(viewer.role) || complaint.complainerId === viewer.sub) {
+    return true;
+  }
+
+  throw new ApiError(403, errorMessage);
+};
+
+const ensureCanViewResponse = async (response, viewer) => {
+  if (isStaffRole(viewer.role) || response.responderId === viewer.sub) {
+    return true;
+  }
+  await ensureComplaintAccess(
+    response.complaintId,
+    viewer,
+    "You are not allowed to view these responses."
+  );
+};
 
 const createResponse = async (req, res, next) => {
   try {
@@ -39,7 +78,9 @@ const getResponseDetailsById = async (req, res, next) => {
     const { id } = req.params;
     if (!id) throw new ApiError(400, "response id is required");
 
+    const viewer = requireViewer(req);
     const details = await responseService.getResponseDetailsById(id);
+    await ensureCanViewResponse(details, viewer);
     return res
       .status(200)
       .json(new ApiResponse(200, details, "Response details fetched."));
@@ -64,6 +105,13 @@ const getComplaintResponses = async (req, res, next) => {
     const { id: complaintId } = req.params;
     if (!complaintId) throw new ApiError(400, "complaintId is required");
 
+    const viewer = requireViewer(req);
+    await ensureComplaintAccess(
+      complaintId,
+      viewer,
+      "You are not allowed to view these responses."
+    );
+
     const responses = await responseService.getComplaintResponses(complaintId);
     return res
       .status(200)
@@ -75,10 +123,8 @@ const getComplaintResponses = async (req, res, next) => {
 
 const getUserResponses = async (req, res, next) => {
   try {
-    const responderId = req.user?.sub;
-    if (!responderId) {
-      throw new ApiError(401, "Unauthorized");
-    }
+    const viewer = requireViewer(req);
+    const responderId = viewer.sub;
 
     const responses = await responseService.getUserResponses(responderId);
     return res
@@ -97,6 +143,7 @@ const updateResponse = async (req, res, next) => {
 
     if (!id) throw new ApiError(400, "response id is required for update");
 
+    requireViewer(req);
     const payload = {
       id,
       content:
@@ -128,6 +175,7 @@ const deleteResponse = async (req, res, next) => {
     const { id } = req.params;
     if (!id) throw new ApiError(400, "response id is required for deletion");
 
+    requireViewer(req);
     const result = await responseService.deleteResponse(id);
     return res
       .status(200)

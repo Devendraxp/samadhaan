@@ -38,7 +38,8 @@ const createComplaint = async (complaint) => {
       status: true,
       createdAt: true,
       updatedAt: true,
-      complainer: { select: { name: true, email: true, role: true } },
+      complainerId: true,
+      complainer: { select: { id: true, name: true, email: true, role: true } },
     },
   });
 
@@ -62,8 +63,9 @@ const getComplaintDetailsById = async (complaintId) => {
       status: true,
       createdAt: true,
       updatedAt: true,
+      complainerId: true,
       complainer: {
-        select: { name: true, email: true, role: true },
+        select: { id: true, name: true, email: true, role: true },
       },
       responses: {
         select: {
@@ -101,7 +103,8 @@ const getAllComplaints = async () => {
       status: true,
       createdAt: true,
       updatedAt: true,
-      complainer: { select: { name: true, email: true, role: true } },
+      complainerId: true,
+      complainer: { select: { id: true, name: true, email: true, role: true } },
       responses: {
         select: {
           id: true,
@@ -147,7 +150,8 @@ const getUserComplaints = async (user) => {
       status: true,
       createdAt: true,
       updatedAt: true,
-      complainer: { select: { name: true, email: true, role: true } },
+      complainerId: true,
+      complainer: { select: { id: true, name: true, email: true, role: true } },
       responses: {
         select: {
           id: true,
@@ -205,7 +209,8 @@ const updateComplaint = async (newComplaint) => {
       status: true,
       createdAt: true,
       updatedAt: true,
-      complainer: { select: { name: true, email: true, role: true } },
+      complainerId: true,
+      complainer: { select: { id: true, name: true, email: true, role: true } },
       responses: {
         select: {
           id: true,
@@ -243,8 +248,9 @@ const updateComplaint = async (newComplaint) => {
         status: true,
         createdAt: true,
         updatedAt: true,
+          complainerId: true,
         complainer: {
-          select: { name: true, email: true, role: true },
+          select: { id: true, name: true, email: true, role: true },
         },
         responses: {
           select: {
