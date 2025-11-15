@@ -1,3 +1,25 @@
+/**
+ * @openapi
+ * /api/v1/cloudinary/upload:
+ *   post:
+ *     summary: Upload a file to Cloudinary
+ *     tags: [Media]
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         description: Upload successful
+ */
 import {Router} from 'express';
 import {uploadsingle} from '../middlewares/cloudinary.middleware.js'
 
