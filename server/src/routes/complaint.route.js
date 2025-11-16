@@ -110,7 +110,7 @@ import {
 
 const router = Router();
 
-// prefix is /complaint
+
 router.post(
   "/",
   authenticate,
@@ -118,9 +118,9 @@ router.post(
   ...uploadsingle("file"),
   createComplaint
 );
-router.get("/", authenticate, requireStaffOrAdmin, getAllComplaints);
+router.get("/", getAllComplaints);
 router.get("/me", authenticate, ensureAccountNotDisabled, getUserComplaints);
-router.get("/:id", authenticate, ensureAccountNotDisabled, getComplaintDetailsById);
+router.get("/:id", getComplaintDetailsById);
 router.patch(
   "/:id",
   authenticate,
