@@ -2,10 +2,31 @@ import express from "express";
 import cookieParser from "cookie-parser";
 import swaggerJsdoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
 import { swaggerOptions } from "./utils/Constant.js";
 import cors from "cors";
 
 const app = express();
+app.set("trust proxy", 1);
+
+const limiter = rateLimit({
+  windowMs: 1000,
+  limit: 15,
+  standardHeaders: "draft-7",
+  legacyHeaders: false,
+  handler: (req, res) => {
+    res.status(429).json({ success: false, message: "Too many requests. Slow down and try again." });
+  },
+});
+
+app.use(limiter);
+app.use(
+  helmet({
+    contentSecurityPolicy: false,
+    crossOriginResourcePolicy: false,
+  })
+);
 
 app.use(
   cors({
@@ -36,7 +57,33 @@ app.use("/api/v1/cloudinary", cloudinaryRouter);
 app.use("/api/v1/response",responseRouter);
 
 const specs = swaggerJsdoc(swaggerOptions);
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
+const swaggerUiOptions = {
+  customSiteTitle: "Samadhaan API Docs",
+  customfavIcon: "/assets/samadhaan-logo.svg",
+  customCss: `
+    .swagger-ui .topbar {
+      background: #ffffff;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .swagger-ui .topbar .link {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .swagger-ui .topbar .link img {
+      content: url('/assets/samadhaan-logo.svg');
+      width: 44px;
+      height: 44px;
+    }
+    .swagger-ui .topbar .link span {
+      font-weight: 600;
+      font-size: 1.1rem;
+      color: #0f172a;
+      letter-spacing: 0.03em;
+    }
+  `,
+};
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs, swaggerUiOptions));
 
 // it must be after all routes
 app.use((err, req, res, next) => {

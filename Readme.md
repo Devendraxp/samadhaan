@@ -86,6 +86,41 @@ cp .env.sample .env
 # Fill PORT, DATABASE_URL, SALT_ROUND, JWT secrets, etc.
 ```
 
+## 🌱 Database Seeding & Sample Data
+
+> ⚠️ The seeding script performs a destructive reset. Run it only against a development database.
+
+```bash
+cd server
+npm run seed
+```
+
+The script wipes existing rows and repopulates:
+
+- 26 curated users (20 unique student domains + 6 staff/admin roles).
+- 120 complaints spanning every domain.
+- 520 responses authored by non-student staff accounts.
+- 60 bell + feed notifications e-mailed to assorted users.
+
+Use this dataset to demo dashboards end-to-end with realistic threaded timelines.
+
+### 🔐 Test Accounts
+
+| Persona | Email | Role | Password | Notes |
+|---------|-------|------|----------|-------|
+| Platform Admin | `admin@samadhaan.in` | ADMIN | `Admin@123` | Full access to every dashboard. |
+| Ops Admin | `operations@samadhaan.in` | ADMIN | `Admin@123` | Mirrors real-world dean/warden powers. |
+| Warden | `warden@residence.samadhaan.in` | ADMIN | `Admin@123` | Great for reviewing responses without editing. |
+| Mess Lead | `mess.lead@mess.samadhaan.in` | MESS | `Mess@123` | Handles food-related complaints. |
+| Internet Lead | `net.manager@internet.samadhaan.in` | INTERNET | `Internet@123` | Manages connectivity issues. |
+| Cleaning Lead | `clean.ops@cleaning.samadhaan.in` | CLEANING | `Cleaning@123` | Oversees sanitation tickets. |
+| Water Lead | `water.lead@utility.samadhaan.in` | WATER | `Water@123` | Resolves water supply disruptions. |
+| Transport Lead | `transport.lead@transport.samadhaan.in` | TRANSPORT | `Transport@123` | Assigned to shuttle/bus complaints. |
+| Student Sampler 01 | `student01@aurora-hostel.in` | STUDENT | `Student@123` | Sample resident used in marketing demos. |
+| Student Sampler 02 | `student02@zephyr-campus.in` | STUDENT | `Student@123` | Another resident profile for parallel sessions. |
+
+Additional student accounts exist for each hostel/domain variation up to `student20@vista-residence.in`, all sharing `Student@123`. Staff passwords align with their role names as shown above, satisfying the "password according to role" requirement for quick recall.
+
 ## ▶️ Running the Apps
 
 ```bash
@@ -133,6 +168,18 @@ Additional sample requests live in [`server/apis.rest`](server/apis.rest).
 
 - Live Swagger UI: **https://hostel-samadhaan.onrender.com/api-docs**
 - Describes every REST endpoint, payload, authentication requirement, and the `source` query parameter.
+
+## 🔐 API Security Defaults
+
+- **Per-IP throttling** – every request pipeline passes through [`express-rate-limit`](server/src/app.js) with a budget of **15 requests per second per IP**. Bursty clients will receive HTTP 429 responses with a friendly error payload.
+- **Secure HTTP headers** – [`helmet`](https://helmetjs.github.io/) is enabled globally to enforce HSTS, hide fingerprinting headers, and add sane defaults. Content-Security-Policy remains disabled to keep Swagger UI functional, but you can enable and customize it if you front static assets yourself.
+- **Trusted proxy awareness** – the Express app trusts the first upstream proxy so rate limiting works even when deployed behind Render/Vercel-style load balancers.
+
+You can tweak these safety nets inside `server/src/app.js` if your deployment needs a stricter/slower profile.
+
+## 🎨 Branding
+
+The refreshed shield logo ships in both the frontend (`client/public/brand-logo.svg`) and backend (`server/public/assets/samadhaan-logo.svg`). It is based on the open-source [Tabler "shield-check" icon](https://tabler.io/icons) (MIT License) with custom gradients to align with the Samadhaan palette. The same asset now appears across the navbar and Swagger UI for a cohesive experience.
 
 ## 🤝 Contributing
 

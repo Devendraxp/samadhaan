@@ -40,6 +40,17 @@ export const Navbar = () => {
     }
   };
 
+  const ComplaintsCta = ({ mobile = false, onNavigate }: { mobile?: boolean; onNavigate?: () => void }) => (
+    <Link to="/complaints" onClick={onNavigate}>
+      <Button
+        variant={mobile ? "default" : "secondary"}
+        className={mobile ? "w-full justify-start" : "font-semibold"}
+      >
+        View Complaints
+      </Button>
+    </Link>
+  );
+
   const NavLinks = ({ mobile = false, onNavigate }: { mobile?: boolean; onNavigate?: () => void }) => {
     const dashboardPath = user?.role ? `/dashboard/${user.role.toLowerCase()}` : "/dashboard";
 
@@ -69,11 +80,6 @@ export const Navbar = () => {
             disabled={!user.role}
           >
             Dashboard
-          </Button>
-        </Link>
-        <Link to="/complaints" onClick={onNavigate}>
-          <Button variant={mobile ? "ghost" : "ghost"} className="w-full justify-start">
-            Complaints
           </Button>
         </Link>
         <Link to="/notifications" onClick={onNavigate}>
@@ -106,10 +112,17 @@ export const Navbar = () => {
     <nav className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <Link to="/" className="flex items-center space-x-2">
-          <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-accent" />
-          <span className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-            Samadhaan
-          </span>
+          <img
+            src="/brand-logo.svg"
+            alt="Samadhaan logo"
+            className="h-10 w-10 drop-shadow-sm"
+          />
+          <div className="flex flex-col leading-tight">
+            <span className="text-xl font-semibold text-foreground">Samadhaan</span>
+            <span className="text-xs uppercase tracking-[0.2em] text-muted-foreground hidden sm:block">
+              Hostel Care
+            </span>
+          </div>
         </Link>
 
         {/* Desktop Navigation */}
@@ -124,6 +137,7 @@ export const Navbar = () => {
             <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
             <span className="sr-only">Toggle theme</span>
           </Button>
+          <ComplaintsCta />
         </div>
 
         {/* Mobile Navigation */}
@@ -144,6 +158,7 @@ export const Navbar = () => {
             </SheetTrigger>
             <SheetContent>
               <div className="flex flex-col space-y-4 mt-8">
+                <ComplaintsCta mobile onNavigate={() => {}} />
                 {!loading && <NavLinks mobile onNavigate={() => {}} />}
               </div>
             </SheetContent>

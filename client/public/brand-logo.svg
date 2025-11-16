@@ -1,0 +1,25 @@
+<svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Icon source: https://tabler.io/icons (MIT License) -->
+  <defs>
+    <linearGradient id="grad" x1="10" y1="10" x2="110" y2="110" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#5B7CFA" />
+      <stop offset="1" stop-color="#29CFE5" />
+    </linearGradient>
+    <linearGradient id="glow" x1="20" y1="20" x2="100" y2="100" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFFFF" stop-opacity="0.25" />
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0" />
+    </linearGradient>
+  </defs>
+  <rect x="6" y="6" width="108" height="108" rx="32" fill="url(#grad)" />
+  <rect x="12" y="12" width="96" height="96" rx="28" fill="url(#glow)" />
+  <g transform="translate(30 26) scale(2.5)">
+    <path
+      d="M7.5 12l2 2l5-5m5.506-2.283a1 1 0 0 1 .494.866v4.175c0 5.385-3.365 10.364-8.507 12.35c-5.143-1.986-8.507-6.965-8.507-12.35V5.583a1 1 0 0 1 .494-.866l8-4.4a1 1 0 0 1 1.013 0z"
+      fill="none"
+      stroke="#FBFDFF"
+      stroke-width="1.6"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+  </g>
+</svg>

@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import type { Complaint } from "@/lib/types";
 
 export default function Landing() {
   const [stats, setStats] = useState({
@@ -24,10 +25,10 @@ export default function Landing() {
     const fetchStats = async () => {
       try {
         const response = await api.get("/complaint");
-        const complaints = response.data;
+  const complaints: Complaint[] = response.data || [];
         setStats({
           totalComplaints: complaints.length,
-          resolvedComplaints: complaints.filter((c: any) => c.status === "RESOLVED").length,
+          resolvedComplaints: complaints.filter((c) => c.status === "RESOLVED").length,
           activeUsers: 0, // Would need separate endpoint
         });
       } catch (error) {
@@ -52,6 +53,12 @@ export default function Landing() {
               and efficient resolution workflows.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link to="/complaints">
+                <Button size="lg" variant="secondary" className="w-full sm:w-auto">
+                  Browse Complaints
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </Link>
               <Link to="/signup">
                 <Button size="lg" className="w-full sm:w-auto">
                   Get Started
@@ -170,12 +177,20 @@ export default function Landing() {
             <p className="text-xl text-muted-foreground mb-8">
               Join our community and experience hassle-free complaint management
             </p>
-            <Link to="/signup">
-              <Button size="lg">
-                Create Account
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-            </Link>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link to="/complaints">
+                <Button size="lg" variant="secondary">
+                  View Complaints
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </Link>
+              <Link to="/signup">
+                <Button size="lg">
+                  Create Account
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </section>
