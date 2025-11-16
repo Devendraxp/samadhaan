@@ -12,18 +12,7 @@ const requireViewer = (req) => {
   return req.user;
 };
 
-const ensureCanViewComplaint = (complaint, viewer) => {
-  if (!viewer) {
-    throw new ApiError(401, "Unauthorized");
-  }
-  if (isStaffRole(viewer.role)) {
-    return true;
-  }
-  if (complaint.complainerId === viewer.sub) {
-    return true;
-  }
-  throw new ApiError(403, "You are not allowed to view this complaint.");
-};
+const getOptionalViewer = (req) => req.user ?? null;
 
 const ensureCanManageComplaint = (complaint, viewer) => {
   if (!viewer) {
@@ -108,10 +97,9 @@ const getComplaintDetailsById = async (req, res, next) => {
       throw new ApiError(400, "Complaint id is required");
     }
 
-    const viewer = requireViewer(req);
-    const details = await complaintService.getComplaintDetailsById(id);
-    ensureCanViewComplaint(details, viewer);
-    const sanitized = sanitizeComplaint(details, viewer);
+  const viewer = getOptionalViewer(req);
+  const details = await complaintService.getComplaintDetailsById(id);
+  const sanitized = sanitizeComplaint(details, viewer);
 
     return res
       .status(200)
@@ -123,9 +111,9 @@ const getComplaintDetailsById = async (req, res, next) => {
 
 const getAllComplaints = async (req, res, next) => {
   try {
-  const viewer = requireViewer(req);
+    const viewer = getOptionalViewer(req);
     const complaints = await complaintService.getAllComplaints();
-  const sanitized = sanitizeComplaints(complaints, viewer);
+    const sanitized = sanitizeComplaints(complaints, viewer);
     return res
       .status(200)
       .json(new ApiResponse(200, sanitized, "All complaints fetched."));
