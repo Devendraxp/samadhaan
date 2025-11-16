@@ -118,4 +118,24 @@ const login = async (req, res, next) => {
   }
 };
 
-export { register, login };
+const logout = async (req, res, next) => {
+  try {
+    const isProd = process.env.NODE_ENV === "production";
+    const options = {
+      httpOnly: true,
+      secure: isProd,
+      sameSite: isProd ? "none" : "lax",
+      path: "/",
+    };
+
+    return res
+      .status(200)
+      .clearCookie("accessToken", options)
+      .clearCookie("refreshToken", options)
+      .json(new ApiResponse(200, { success: true }, "Logged out successfully."));
+  } catch (error) {
+    next(error);
+  }
+};
+
+export { register, login, logout };
