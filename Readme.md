@@ -109,13 +109,13 @@ Use this dataset to demo dashboards end-to-end with realistic threaded timelines
 | Persona | Email | Role | Password | Notes |
 |---------|-------|------|----------|-------|
 | Platform Admin | `admin@samadhaan.in` | ADMIN | `Admin@123` | Full access to every dashboard. |
-| Ops Admin | `operations@samadhaan.in` | ADMIN | `Admin@123` | Mirrors real-world dean/warden powers. |
-| Warden | `warden@residence.samadhaan.in` | ADMIN | `Admin@123` | Great for reviewing responses without editing. |
-| Mess Lead | `mess.lead@mess.samadhaan.in` | MESS | `Mess@123` | Handles food-related complaints. |
-| Internet Lead | `net.manager@internet.samadhaan.in` | INTERNET | `Internet@123` | Manages connectivity issues. |
-| Cleaning Lead | `clean.ops@cleaning.samadhaan.in` | CLEANING | `Cleaning@123` | Oversees sanitation tickets. |
-| Water Lead | `water.lead@utility.samadhaan.in` | WATER | `Water@123` | Resolves water supply disruptions. |
-| Transport Lead | `transport.lead@transport.samadhaan.in` | TRANSPORT | `Transport@123` | Assigned to shuttle/bus complaints. |
+| Ops Admin | `ops@samadhaan.in` | ADMIN | `Admin@123` | Mirrors real-world dean/warden powers. |
+| Warden | `warden@samadhaan.in` | ADMIN | `Admin@123` | Great for reviewing responses without editing. |
+| Mess Lead | `mess@samadhaan.in` | MESS | `Mess@123` | Handles food-related complaints. |
+| Internet Lead | `internet@samadhaan.in` | INTERNET | `Internet@123` | Manages connectivity issues. |
+| Cleaning Lead | `cleaning@samadhaan.in` | CLEANING | `Cleaning@123` | Oversees sanitation tickets. |
+| Water Lead | `water@samadhaan.in` | WATER | `Water@123` | Resolves water supply disruptions. |
+| Transport Lead | `transport@samadhaan.in` | TRANSPORT | `Transport@123` | Assigned to shuttle/bus complaints. |
 | Student Sampler 01 | `student01@aurora-hostel.in` | STUDENT | `Student@123` | Sample resident used in marketing demos. |
 | Student Sampler 02 | `student02@zephyr-campus.in` | STUDENT | `Student@123` | Another resident profile for parallel sessions. |
 
