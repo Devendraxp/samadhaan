@@ -141,18 +141,14 @@ router.post(
   ...uploadsingle("file"),
   createResponse
 );
-router.get("/", authenticate, requireStaffOrAdmin, getAllResponses);
+router.get("/",  getAllResponses);
 router.get("/me", authenticate, ensureAccountNotDisabled, getUserResponses);
 router.get(
   "/complaint/:id",
-  authenticate,
-  ensureAccountNotDisabled,
   getComplaintResponses
 );
 router.get(
   "/:id",
-  authenticate,
-  ensureAccountNotDisabled,
   getResponseDetailsById
 );
 router.patch(
