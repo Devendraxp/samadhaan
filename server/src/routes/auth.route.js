@@ -39,16 +39,30 @@
  *     responses:
  *       200:
  *         description: User logged in successfully
+ *
+ * /api/v1/auth/logout:
+ *   post:
+ *     summary: Logout current user
+ *     tags:
+ *       - Auth
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - $ref: '#/components/parameters/SourceQuery'
+ *     responses:
+ *       200:
+ *         description: Logged out successfully
  */
 
 import {Router} from "express";
-import { login, register } from "../controllers/auth.controller.js";
+import { login, register, logout } from "../controllers/auth.controller.js";
 import { authenticate } from "../middlewares/auth.middleware.js";
 const router = Router();
 
 
 router.route("/register").post(register);
 router.route("/login").post(login);
+router.route("/logout").post(authenticate, logout);
 
 
 
