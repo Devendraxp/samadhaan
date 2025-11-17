@@ -57,9 +57,12 @@ app.use("/api/v1/cloudinary", cloudinaryRouter);
 app.use("/api/v1/response",responseRouter);
 
 const specs = swaggerJsdoc(swaggerOptions);
+const EXTERNAL_LOGO = "https://unpkg.com/tabler-icons@1.39.1/icons/shield-check.svg";
+
 const swaggerUiOptions = {
   customSiteTitle: "Samadhaan API Docs",
-  customfavIcon: "/assets/samadhaan-logo.svg",
+  // use an externally hosted logo so the Swagger UI works even if server/public is empty
+  customfavIcon: EXTERNAL_LOGO,
   customCss: `
     .swagger-ui .topbar {
       background: #ffffff;
@@ -71,7 +74,7 @@ const swaggerUiOptions = {
       gap: 12px;
     }
     .swagger-ui .topbar .link img {
-      content: url('/assets/samadhaan-logo.svg');
+      content: url('${EXTERNAL_LOGO}');
       width: 44px;
       height: 44px;
     }
