@@ -17,7 +17,7 @@ const swaggerOptions = {
     },
     servers: [
       {
-        url: "http://localhost:3000",
+        url: "https://hostel-samadhaan.onrender.com/",
       },
     ],
     components: {
@@ -80,6 +80,13 @@ const swaggerOptions = {
             mediaLink: { type: "string" },
             anonymous: { type: "boolean" },
           },
+          example: {
+            subject: "Low water pressure on fourth floor",
+            description: "Residents from Block B2 report very low water pressure since last night. Please inspect the valves and pumps.",
+            domain: "WATER",
+            anonymous: false,
+            mediaLink: "https://hostel-samadhaan.onrender.com/assets/sample-photo.jpg"
+          },
         },
         UpdateComplaintInput: {
           type: "object",
@@ -112,6 +119,11 @@ const swaggerOptions = {
             mediaLink: { type: "string" },
             isVisible: { type: "boolean" },
           },
+          example: {
+            complaintId: "00000000-0000-0000-0000-000000000000",
+            content: "Thanks — maintenance team will check the pump and revert by tomorrow evening.",
+            isVisible: true
+          },
         },
         Notification: {
           type: "object",
@@ -137,6 +149,12 @@ const swaggerOptions = {
             domain: { type: "string" },
             mediaLink: { type: "string" },
           },
+          example: {
+            title: "Water shut down for maintenance",
+            description: "Water supply will be suspended in Blocks A and B from 10:00 to 14:00 for scheduled maintenance.",
+            type: "ALERT",
+            domain: "WATER"
+          },
         },
         RegisterInput: {
           type: "object",
@@ -146,6 +164,11 @@ const swaggerOptions = {
             email: { type: "string" },
             password: { type: "string" },
           },
+          example: {
+            name: "Aman Verma",
+            email: "student01@aurora-hostel.in",
+            password: "Student@123"
+          },
         },
         LoginInput: {
           type: "object",
@@ -153,6 +176,10 @@ const swaggerOptions = {
           properties: {
             email: { type: "string" },
             password: { type: "string" },
+          },
+          example: {
+            email: "admin@samadhaan.in",
+            password: "Admin@123"
           },
         },
       },
