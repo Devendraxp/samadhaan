@@ -1,32 +1,18 @@
 // src/infra/redis.js
-import { RedisMemoryServer } from "redis-memory-server";
-import { createClient } from "redis";
+import Redis from "ioredis-mock";
 
-let redisServer = null;
 let redisClient = null;
 
 const initRedis = async () => {
   if (redisClient) return redisClient; // ✅ singleton
 
-  redisServer = await RedisMemoryServer.create({
-    binary: {
-      version: "7.2.4", // ✅ prebuilt binary, no jemalloc build
-    },
-  });
-
-  const host = await redisServer.getHost();
-  const port = await redisServer.getPort();
-
-  redisClient = createClient({
-    url: `redis://${host}:${port}`,
-  });
+  redisClient = new Redis();
 
   redisClient.on("error", (err) => {
     console.error("Redis Client Error", err);
   });
 
-  await redisClient.connect();
-  console.log("✅ In-memory Redis started");
+  console.log("✅ In-memory Redis (ioredis-mock) started");
 
   return redisClient;
 };
@@ -35,11 +21,6 @@ const shutdownRedis = async () => {
   if (redisClient) {
     await redisClient.quit();
     redisClient = null;
-  }
-
-  if (redisServer) {
-    await redisServer.stop();
-    redisServer = null;
   }
 
   console.log("🛑 In-memory Redis stopped");
@@ -70,7 +51,7 @@ const cacheSet = async (key, value, ttl) => {
   if (!redisClient) throw new Error("Redis not initialized");
 
   try {
-    await redisClient.setEx(key, ttl, JSON.stringify(value));
+    await redisClient.setex(key, ttl, JSON.stringify(value));
   } catch (err) {
     console.error("Redis SET error:", err);
   }
@@ -92,7 +73,7 @@ const cacheDeletePattern = async (pattern) => {
   try {
     const keys = await redisClient.keys(pattern);
     if (keys.length > 0) {
-      await redisClient.del(keys);
+      await redisClient.del(...keys);
     }
   } catch (err) {
     console.error("Redis DEL pattern error:", err);
