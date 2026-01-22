@@ -14,7 +14,9 @@
   },
   "dependencies": {
     "@faker-js/faker": "^9.9.0",
-  "@prisma/client": "^6.19.0",
+    "@prisma/client": "^6.19.2",
+    "@prisma/extension-accelerate": "^3.0.1",
+    "apminsight": "^5.2.1",
     "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.3",
     "body-parser": "^2.2.0",
@@ -23,15 +25,20 @@
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
-  "express-rate-limit": "^7.5.0",
-  "helmet": "^8.1.0",
+    "express-rate-limit": "^7.5.0",
+    "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
     "multer": "^2.0.2",
     "multer-storage-cloudinary": "^4.0.0",
     "nodemon": "^3.1.10",
-    "prisma": "^6.19.0",
+    "pg": "^8.17.2",
+    "redis": "^5.10.0",
+    "redis-memory-server": "^0.15.0",
     "streamifier": "^0.1.1",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1"
+  },
+  "devDependencies": {
+    "prisma": "^6.19.2"
   }
 }

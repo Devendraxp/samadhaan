@@ -1,0 +1,9 @@
+ignoredBuiltDependencies:
+  - '@apminsight/native-stats'
+  - '@prisma/client'
+  - '@prisma/engines'
+  - '@scarf/scarf'
+  - bcrypt
+  - core-js
+  - prisma
+  - redis-memory-server

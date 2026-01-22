@@ -10,7 +10,7 @@ const responseSelect = {
   updatedAt: true,
   complaintId: true,
   responderId: true,
-  responder: { select: { id: true, name: true, email : true, role : true } },
+  responder: { select: { id: true, name: true, email: true, role: true } },
 };
 
 const createResponse = async (response) => {
@@ -58,29 +58,41 @@ const getResponseDetailsById = async (id) => {
   return resp;
 };
 
-const getAllResponses = async () => {
-  const responses = await prisma.response.findMany({
-    orderBy: { createdAt: "desc" },
-    select: responseSelect,
-  });
-  return responses;
+const getAllResponses = async ({ skip, size } = {}) => {
+  const [responses, total] = await Promise.all([
+    prisma.response.findMany({
+      orderBy: { createdAt: "desc" },
+      skip: skip ?? 0,
+      take: size ?? 10,
+      select: responseSelect,
+    }),
+    prisma.response.count(),
+  ]);
+  return { responses, total };
 };
 
-const getComplaintResponses = async (complaintId) => {
+const getComplaintResponses = async (complaintId, { skip, size } = {}) => {
   if (!complaintId) {
     throw new ApiError(400, "complaintId is required");
   }
 
-  const responses = await prisma.response.findMany({
-    where: { complaintId },
-    orderBy: { createdAt: "asc" },
-    select: responseSelect,
-  });
+  const whereClause = { complaintId };
 
-  return responses;
+  const [responses, total] = await Promise.all([
+    prisma.response.findMany({
+      where: whereClause,
+      orderBy: { createdAt: "asc" },
+      skip: skip ?? 0,
+      take: size ?? 10,
+      select: responseSelect,
+    }),
+    prisma.response.count({ where: whereClause }),
+  ]);
+
+  return { responses, total };
 };
 
-const getUserResponses = async (user) => {
+const getUserResponses = async (user, { skip, size } = {}) => {
   if (!user) {
     throw new ApiError(400, "User identifier is required");
   }
@@ -95,13 +107,20 @@ const getUserResponses = async (user) => {
     throw new ApiError(400, "Authenticated user has no id/responderId");
   }
 
-  const responses = await prisma.response.findMany({
-    where: { responderId },
-    orderBy: { createdAt: "desc" },
-    select: responseSelect,
-  });
+  const whereClause = { responderId };
 
-  return responses;
+  const [responses, total] = await Promise.all([
+    prisma.response.findMany({
+      where: whereClause,
+      orderBy: { createdAt: "desc" },
+      skip: skip ?? 0,
+      take: size ?? 10,
+      select: responseSelect,
+    }),
+    prisma.response.count({ where: whereClause }),
+  ]);
+
+  return { responses, total };
 };
 
 const updateResponse = async (newResponse) => {

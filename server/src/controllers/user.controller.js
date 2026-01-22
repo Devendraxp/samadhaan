@@ -5,9 +5,11 @@ import {
   findUserById,
   updateUserProfile,
   deleteUserProfile,
+  listAllUsers,
 } from "../services/user.service.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
+import { parsePaginationParams, buildPaginatedResponse } from "../utils/pagination.js";
 
 // Helpers
 const ensureAdmin = (req, next) => {
@@ -31,26 +33,19 @@ const getProfile = async (req, res, next) => {
   }
 };
 
-// Admin: list all users (basic, can add filters later)
+// Admin: list all users (paginated)
 const listUsers = async (req, res, next) => {
   try {
     const ok = ensureAdmin(req, next);
     if (ok !== true) return;
-    const users = await prisma.user.findMany({
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        status: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-      orderBy: { createdAt: "desc" },
-    });
+
+    const { page, size, skip } = parsePaginationParams(req.query);
+    const { users, total } = await listAllUsers({ skip, size });
+    const paginated = buildPaginatedResponse(users, total, page, size);
+
     return res
       .status(200)
-      .json(new ApiResponse(200, users, "Users fetched successfully."));
+      .json(new ApiResponse(200, paginated, "Users fetched successfully."));
   } catch (err) {
     next(err);
   }

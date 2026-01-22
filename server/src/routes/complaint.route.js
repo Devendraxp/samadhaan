@@ -11,6 +11,26 @@
  *     requestBody:
  *       required: true
  *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - subject
+ *               - description
+ *               - domain
+ *             properties:
+ *               subject:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               domain:
+ *                 type: string
+ *               anonymous:
+ *                 type: string
+ *                 enum: ["true", "false"]
+ *               file:
+ *                 type: string
+ *                 format: binary
  *         application/json:
  *           schema:
  *             $ref: '#/components/schemas/CreateComplaintInput'
@@ -22,31 +42,36 @@
  *             schema:
  *               $ref: '#/components/schemas/Complaint'
  *   get:
- *     summary: List all complaints (staff/admin)
+ *     summary: List all complaints (paginated)
  *     tags: [Complaints]
- *     security:
- *       - BearerAuth: []
+ *     parameters:
+ *       - $ref: '#/components/parameters/PageQuery'
+ *       - $ref: '#/components/parameters/SizeQuery'
  *     responses:
  *       200:
- *         description: Complaints collection
+ *         description: Paginated complaints collection
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Complaint'
+ *               $ref: '#/components/schemas/PaginatedComplaints'
  *
  * /api/v1/complaint/me:
  *   get:
- *     summary: List complaints created by the logged-in student
+ *     summary: List complaints created by the logged-in user (paginated)
  *     tags: [Complaints]
  *     security:
  *       - BearerAuth: []
  *     parameters:
  *       - $ref: '#/components/parameters/SourceQuery'
+ *       - $ref: '#/components/parameters/PageQuery'
+ *       - $ref: '#/components/parameters/SizeQuery'
  *     responses:
  *       200:
- *         description: Complaints collection
+ *         description: Paginated complaints collection
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/PaginatedComplaints'
  *
  * /api/v1/complaint/{id}:
  *   parameters:
@@ -59,13 +84,15 @@
  *   get:
  *     summary: Get complaint details
  *     tags: [Complaints]
- *     security:
- *       - BearerAuth: []
  *     parameters:
  *       - $ref: '#/components/parameters/SourceQuery'
  *     responses:
  *       200:
  *         description: Complaint details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Complaint'
  *   patch:
  *     summary: Update complaint
  *     tags: [Complaints]
@@ -76,6 +103,24 @@
  *     requestBody:
  *       required: true
  *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               subject:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               domain:
+ *                 type: string
+ *               status:
+ *                 type: string
+ *               anonymous:
+ *                 type: string
+ *                 enum: ["true", "false"]
+ *               file:
+ *                 type: string
+ *                 format: binary
  *         application/json:
  *           schema:
  *             $ref: '#/components/schemas/UpdateComplaintInput'
@@ -87,6 +132,8 @@
  *     tags: [Complaints]
  *     security:
  *       - BearerAuth: []
+ *     parameters:
+ *       - $ref: '#/components/parameters/SourceQuery'
  *     responses:
  *       200:
  *         description: Complaint deleted

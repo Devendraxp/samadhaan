@@ -6,6 +6,7 @@ import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import { swaggerOptions } from "./utils/Constant.js";
 import cors from "cors";
+import { initRedis } from './utils/redis.js';
 
 const app = express();
 app.set("trust proxy", 1);
@@ -95,6 +96,6 @@ app.use((err, req, res, next) => {
   res.status(statusCode).json({ success: false, message });
 });
 
-
+await initRedis();
 
 export default app;

@@ -52,21 +52,21 @@
  *
  * /api/v1/user:
  *   get:
- *     summary: List all users (admin only)
+ *     summary: List all users (admin only, paginated)
  *     tags: [User]
  *     security:
  *       - BearerAuth: []
  *     parameters:
  *       - $ref: '#/components/parameters/SourceQuery'
+ *       - $ref: '#/components/parameters/PageQuery'
+ *       - $ref: '#/components/parameters/SizeQuery'
  *     responses:
  *       200:
  *         description: Paginated list of users
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/User'
+ *               $ref: '#/components/schemas/PaginatedUsers'
  *   post:
  *     summary: Create user (admin only)
  *     tags: [User]

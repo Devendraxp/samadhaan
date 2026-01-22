@@ -19,6 +19,9 @@ const swaggerOptions = {
       {
         url: "https://hostel-samadhaan.onrender.com/",
       },
+      {
+        url: "http://localhost:3000/",
+      }
     ],
     components: {
       securitySchemes: {
@@ -41,6 +44,29 @@ const swaggerOptions = {
           description:
             "Append ?source=web when calling from browser-based clients to ensure cookies/token flows behave correctly.",
         },
+        PageQuery: {
+          in: "query",
+          name: "page",
+          schema: {
+            type: "integer",
+            minimum: 1,
+            default: 1,
+          },
+          required: false,
+          description: "Page number for pagination (default: 1)",
+        },
+        SizeQuery: {
+          in: "query",
+          name: "size",
+          schema: {
+            type: "integer",
+            minimum: 1,
+            maximum: 20,
+            default: 10,
+          },
+          required: false,
+          description: "Number of items per page (default: 10, max: 20)",
+        },
       },
       schemas: {
         User: {
@@ -53,6 +79,27 @@ const swaggerOptions = {
             status: { type: "string" },
             createdAt: { type: "string", format: "date-time" },
             updatedAt: { type: "string", format: "date-time" },
+          },
+        },
+        Pagination: {
+          type: "object",
+          properties: {
+            page: { type: "integer", example: 1 },
+            size: { type: "integer", example: 10 },
+            total: { type: "integer", example: 45 },
+            totalPages: { type: "integer", example: 5 },
+            hasNext: { type: "boolean", example: true },
+            hasPrev: { type: "boolean", example: false },
+          },
+        },
+        PaginatedUsers: {
+          type: "object",
+          properties: {
+            data: {
+              type: "array",
+              items: { $ref: "#/components/schemas/User" },
+            },
+            pagination: { $ref: "#/components/schemas/Pagination" },
           },
         },
         Complaint: {
@@ -68,6 +115,20 @@ const swaggerOptions = {
             createdAt: { type: "string", format: "date-time" },
             updatedAt: { type: "string", format: "date-time" },
             complainer: { $ref: "#/components/schemas/User" },
+            responses: {
+              type: "array",
+              items: { $ref: "#/components/schemas/Response" },
+            },
+          },
+        },
+        PaginatedComplaints: {
+          type: "object",
+          properties: {
+            data: {
+              type: "array",
+              items: { $ref: "#/components/schemas/Complaint" },
+            },
+            pagination: { $ref: "#/components/schemas/Pagination" },
           },
         },
         CreateComplaintInput: {
@@ -107,7 +168,20 @@ const swaggerOptions = {
             mediaLink: { type: "string", nullable: true },
             isVisible: { type: "boolean" },
             createdAt: { type: "string", format: "date-time" },
+            updatedAt: { type: "string", format: "date-time" },
+            complaintId: { type: "string", format: "uuid" },
+            responderId: { type: "string", format: "uuid" },
             responder: { $ref: "#/components/schemas/User" },
+          },
+        },
+        PaginatedResponses: {
+          type: "object",
+          properties: {
+            data: {
+              type: "array",
+              items: { $ref: "#/components/schemas/Response" },
+            },
+            pagination: { $ref: "#/components/schemas/Pagination" },
           },
         },
         CreateResponseInput: {
@@ -125,6 +199,14 @@ const swaggerOptions = {
             isVisible: true
           },
         },
+        UpdateResponseInput: {
+          type: "object",
+          properties: {
+            content: { type: "string" },
+            mediaLink: { type: "string" },
+            isVisible: { type: "boolean" },
+          },
+        },
         Notification: {
           type: "object",
           properties: {
@@ -136,7 +218,17 @@ const swaggerOptions = {
             mediaLink: { type: "string", nullable: true },
             createdAt: { type: "string", format: "date-time" },
             updatedAt: { type: "string", format: "date-time" },
-            createdBy: { $ref: "#/components/schemas/User" },
+            userId: { type: "string", format: "uuid" },
+          },
+        },
+        PaginatedNotifications: {
+          type: "object",
+          properties: {
+            data: {
+              type: "array",
+              items: { $ref: "#/components/schemas/Notification" },
+            },
+            pagination: { $ref: "#/components/schemas/Pagination" },
           },
         },
         CreateNotificationInput: {

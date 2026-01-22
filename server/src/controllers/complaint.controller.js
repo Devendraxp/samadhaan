@@ -2,6 +2,7 @@ import * as complaintService from "../services/complaint.service.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { STAFF_ROLES } from "../middlewares/authorization.middleware.js";
+import { parsePaginationParams, buildPaginatedResponse } from "../utils/pagination.js";
 
 const isStaffRole = (role) => role === "ADMIN" || STAFF_ROLES.includes(role);
 
@@ -112,11 +113,15 @@ const getComplaintDetailsById = async (req, res, next) => {
 const getAllComplaints = async (req, res, next) => {
   try {
     const viewer = getOptionalViewer(req);
-    const complaints = await complaintService.getAllComplaints();
+    const { page, size, skip } = parsePaginationParams(req.query);
+    
+    const { complaints, total } = await complaintService.getAllComplaints({ skip, size });
     const sanitized = sanitizeComplaints(complaints, viewer);
+    const paginated = buildPaginatedResponse(sanitized, total, page, size);
+
     return res
       .status(200)
-      .json(new ApiResponse(200, sanitized, "All complaints fetched."));
+      .json(new ApiResponse(200, paginated, "All complaints fetched."));
   } catch (error) {
     return next(error);
   }
@@ -129,12 +134,14 @@ const getUserComplaints = async (req, res, next) => {
       throw new ApiError(401, "Unauthorized");
     }
 
-    const complaints = await complaintService.getUserComplaints(complainerId);
+    const { page, size, skip } = parsePaginationParams(req.query);
+    const { complaints, total } = await complaintService.getUserComplaints(complainerId, { skip, size });
     const sanitized = sanitizeComplaints(complaints, req.user);
+    const paginated = buildPaginatedResponse(sanitized, total, page, size);
 
     return res
       .status(200)
-      .json(new ApiResponse(200, sanitized, "User complaints fetched."));
+      .json(new ApiResponse(200, paginated, "User complaints fetched."));
   } catch (error) {
     return next(error);
   }

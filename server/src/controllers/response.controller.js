@@ -1,6 +1,7 @@
 import * as responseService from "../services/response.service.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
+import { parsePaginationParams, buildPaginatedResponse } from "../utils/pagination.js";
 
 const requireViewer = (req) => {
   if (!req.user?.sub) {
@@ -57,10 +58,13 @@ const getResponseDetailsById = async (req, res, next) => {
 
 const getAllResponses = async (req, res, next) => {
   try {
-    const responses = await responseService.getAllResponses();
+    const { page, size, skip } = parsePaginationParams(req.query);
+    const { responses, total } = await responseService.getAllResponses({ skip, size });
+    const paginated = buildPaginatedResponse(responses, total, page, size);
+
     return res
       .status(200)
-      .json(new ApiResponse(200, responses, "All responses fetched."));
+      .json(new ApiResponse(200, paginated, "All responses fetched."));
   } catch (error) {
     return next(error);
   }
@@ -71,10 +75,13 @@ const getComplaintResponses = async (req, res, next) => {
     const { id: complaintId } = req.params;
     if (!complaintId) throw new ApiError(400, "complaintId is required");
 
-    const responses = await responseService.getComplaintResponses(complaintId);
+    const { page, size, skip } = parsePaginationParams(req.query);
+    const { responses, total } = await responseService.getComplaintResponses(complaintId, { skip, size });
+    const paginated = buildPaginatedResponse(responses, total, page, size);
+
     return res
       .status(200)
-      .json(new ApiResponse(200, responses, "Complaint responses fetched."));
+      .json(new ApiResponse(200, paginated, "Complaint responses fetched."));
   } catch (error) {
     return next(error);
   }
@@ -85,10 +92,13 @@ const getUserResponses = async (req, res, next) => {
     const viewer = requireViewer(req);
     const responderId = viewer.sub;
 
-    const responses = await responseService.getUserResponses(responderId);
+    const { page, size, skip } = parsePaginationParams(req.query);
+    const { responses, total } = await responseService.getUserResponses(responderId, { skip, size });
+    const paginated = buildPaginatedResponse(responses, total, page, size);
+
     return res
       .status(200)
-      .json(new ApiResponse(200, responses, "User responses fetched."));
+      .json(new ApiResponse(200, paginated, "User responses fetched."));
   } catch (error) {
     return next(error);
   }

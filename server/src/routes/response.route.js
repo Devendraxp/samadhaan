@@ -13,7 +13,21 @@
  *       content:
  *         multipart/form-data:
  *           schema:
- *             $ref: '#/components/schemas/CreateResponseInput'
+ *             type: object
+ *             required:
+ *               - complaintId
+ *               - content
+ *             properties:
+ *               complaintId:
+ *                 type: string
+ *                 format: uuid
+ *               content:
+ *                 type: string
+ *               isVisible:
+ *                 type: boolean
+ *               file:
+ *                 type: string
+ *                 format: binary
  *         application/json:
  *           schema:
  *             $ref: '#/components/schemas/CreateResponseInput'
@@ -25,31 +39,36 @@
  *             schema:
  *               $ref: '#/components/schemas/Response'
  *   get:
- *     summary: List all responses (staff/admin)
+ *     summary: List all responses (paginated)
  *     tags: [Responses]
- *     security:
- *       - BearerAuth: []
+ *     parameters:
+ *       - $ref: '#/components/parameters/PageQuery'
+ *       - $ref: '#/components/parameters/SizeQuery'
  *     responses:
  *       200:
- *         description: Collection of responses
+ *         description: Paginated collection of responses
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Response'
+ *               $ref: '#/components/schemas/PaginatedResponses'
  *
  * /api/v1/response/me:
  *   get:
- *     summary: List responses authored by logged-in user
+ *     summary: List responses authored by logged-in user (paginated)
  *     tags: [Responses]
  *     security:
  *       - BearerAuth: []
  *     parameters:
  *       - $ref: '#/components/parameters/SourceQuery'
+ *       - $ref: '#/components/parameters/PageQuery'
+ *       - $ref: '#/components/parameters/SizeQuery'
  *     responses:
  *       200:
- *         description: Collection of responses
+ *         description: Paginated collection of responses
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/PaginatedResponses'
  *
  * /api/v1/response/complaint/{id}:
  *   parameters:
@@ -60,15 +79,19 @@
  *         type: string
  *       description: Complaint ID
  *   get:
- *     summary: List responses for a complaint
+ *     summary: List responses for a complaint (paginated)
  *     tags: [Responses]
- *     security:
- *       - BearerAuth: []
  *     parameters:
  *       - $ref: '#/components/parameters/SourceQuery'
+ *       - $ref: '#/components/parameters/PageQuery'
+ *       - $ref: '#/components/parameters/SizeQuery'
  *     responses:
  *       200:
- *         description: Collection of responses
+ *         description: Paginated collection of responses
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/PaginatedResponses'
  *
  * /api/v1/response/{id}:
  *   parameters:
@@ -81,27 +104,39 @@
  *   get:
  *     summary: Get response details
  *     tags: [Responses]
- *     security:
- *       - BearerAuth: []
  *     parameters:
  *       - $ref: '#/components/parameters/SourceQuery'
  *     responses:
  *       200:
  *         description: Response details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Response'
  *   patch:
  *     summary: Update a response
  *     tags: [Responses]
  *     security:
  *       - BearerAuth: []
+ *     parameters:
+ *       - $ref: '#/components/parameters/SourceQuery'
  *     requestBody:
  *       required: true
  *       content:
  *         multipart/form-data:
  *           schema:
- *             $ref: '#/components/schemas/CreateResponseInput'
+ *             type: object
+ *             properties:
+ *               content:
+ *                 type: string
+ *               isVisible:
+ *                 type: boolean
+ *               file:
+ *                 type: string
+ *                 format: binary
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/CreateResponseInput'
+ *             $ref: '#/components/schemas/UpdateResponseInput'
  *     responses:
  *       200:
  *         description: Response updated
@@ -110,6 +145,8 @@
  *     tags: [Responses]
  *     security:
  *       - BearerAuth: []
+ *     parameters:
+ *       - $ref: '#/components/parameters/SourceQuery'
  *     responses:
  *       200:
  *         description: Response deleted

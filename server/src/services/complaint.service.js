@@ -1,6 +1,6 @@
 import prisma from "../utils/Prisma.js";
-import { createResponse } from "./response.service.js";
 import { ApiError } from "../utils/ApiError.js";
+import { cacheGet, cacheSet, cacheDelete, cacheDeletePattern, CACHE_TTL } from "../utils/redis.js";
 
 const createComplaint = async (complaint) => {
   const {
@@ -43,6 +43,10 @@ const createComplaint = async (complaint) => {
     },
   });
 
+  // Cache and invalidate lists
+  await cacheSet(`complaint:${createdComplaint.id}`, createdComplaint, CACHE_TTL.COMPLAINT);
+  await cacheDeletePattern("complaints:*");
+
   return createdComplaint;
 };
 
@@ -50,6 +54,9 @@ const getComplaintDetailsById = async (complaintId) => {
   if (!complaintId) {
     throw new ApiError(400, "Complaint id is required");
   }
+
+  const cached = await cacheGet(`complaint:${complaintId}`);
+  if (cached) return cached;
 
   const complaint = await prisma.complaint.findUnique({
     where: { id: complaintId },
@@ -87,42 +94,56 @@ const getComplaintDetailsById = async (complaintId) => {
     throw new ApiError(404, "Complaint not found");
   }
 
+  await cacheSet(`complaint:${complaintId}`, complaint, CACHE_TTL.COMPLAINT);
+
   return complaint;
 };
 
-const getAllComplaints = async () => {
-  const complaints = await prisma.complaint.findMany({
-    orderBy: { createdAt: "desc" },
-    select: {
-      id: true,
-      subject: true,
-      description: true,
-      mediaLink: true,
-      domain: true,
-      anonymous: true,
-      status: true,
-      createdAt: true,
-      updatedAt: true,
-      complainerId: true,
-      complainer: { select: { id: true, name: true, email: true, role: true } },
-      responses: {
-        select: {
-          id: true,
-          content: true,
-          mediaLink: true,
-          createdAt: true,
-          responderId: true,
-          responder: { select: { name: true, email: true, role: true } },
-        },
-        orderBy: { createdAt: "asc" },
-      },
-    },
-  });
+const getAllComplaints = async ({ skip, size } = {}) => {
+  const cacheKey = `complaints:all:${skip ?? 0}:${size ?? 10}`;
+  const cached = await cacheGet(cacheKey);
+  if (cached) return cached;
 
-  return complaints;
+  const [complaints, total] = await Promise.all([
+    prisma.complaint.findMany({
+      orderBy: { createdAt: "desc" },
+      skip: skip ?? 0,
+      take: size ?? 10,
+      select: {
+        id: true,
+        subject: true,
+        description: true,
+        mediaLink: true,
+        domain: true,
+        anonymous: true,
+        status: true,
+        createdAt: true,
+        updatedAt: true,
+        complainerId: true,
+        complainer: { select: { id: true, name: true, email: true, role: true } },
+        responses: {
+          select: {
+            id: true,
+            content: true,
+            mediaLink: true,
+            createdAt: true,
+            responderId: true,
+            responder: { select: { name: true, email: true, role: true } },
+          },
+          orderBy: { createdAt: "asc" },
+        },
+      },
+    }),
+    prisma.complaint.count(),
+  ]);
+
+  const result = { complaints, total };
+  await cacheSet(cacheKey, result, CACHE_TTL.COMPLAINT);
+
+  return result;
 };
 
-const getUserComplaints = async (user) => {
+const getUserComplaints = async (user, { skip, size } = {}) => {
   if (!user) {
     throw new ApiError(400, "User identifier is required");
   }
@@ -137,36 +158,48 @@ const getUserComplaints = async (user) => {
     throw new ApiError(400, "Authenticated user has no id/complainerId");
   }
 
-  const complaints = await prisma.complaint.findMany({
-    where: { complainerId },
-    orderBy: { createdAt: "desc" },
-    select: {
-      id: true,
-      subject: true,
-      description: true,
-      mediaLink: true,
-      domain: true,
-      anonymous: true,
-      status: true,
-      createdAt: true,
-      updatedAt: true,
-      complainerId: true,
-      complainer: { select: { id: true, name: true, email: true, role: true } },
-      responses: {
-        select: {
-          id: true,
-          content: true,
-          mediaLink: true,
-          createdAt: true,
-          responderId: true,
-          responder: { select: { name: true, email: true, role: true } },
-        },
-        orderBy: { createdAt: "asc" },
-      },
-    },
-  });
+  const cacheKey = `complaints:user:${complainerId}:${skip ?? 0}:${size ?? 10}`;
+  const cached = await cacheGet(cacheKey);
+  if (cached) return cached;
 
-  return complaints;
+  const [complaints, total] = await Promise.all([
+    prisma.complaint.findMany({
+      where: { complainerId },
+      orderBy: { createdAt: "desc" },
+      skip: skip ?? 0,
+      take: size ?? 10,
+      select: {
+        id: true,
+        subject: true,
+        description: true,
+        mediaLink: true,
+        domain: true,
+        anonymous: true,
+        status: true,
+        createdAt: true,
+        updatedAt: true,
+        complainerId: true,
+        complainer: { select: { id: true, name: true, email: true, role: true } },
+        responses: {
+          select: {
+            id: true,
+            content: true,
+            mediaLink: true,
+            createdAt: true,
+            responderId: true,
+            responder: { select: { name: true, email: true, role: true } },
+          },
+          orderBy: { createdAt: "asc" },
+        },
+      },
+    }),
+    prisma.complaint.count({ where: { complainerId } }),
+  ]);
+
+  const result = { complaints, total };
+  await cacheSet(cacheKey, result, CACHE_TTL.COMPLAINT);
+
+  return result;
 };
 
 const updateComplaint = async (newComplaint) => {
@@ -227,47 +260,9 @@ const updateComplaint = async (newComplaint) => {
     },
   });
 
-  if (
-    Array.isArray(newComplaint.responses) &&
-    newComplaint.responses.length > 0
-  ) {
-    await Promise.all(
-      newComplaint.responses.map((r) =>
-        createResponse({ ...r, complaintId: id })
-      )
-    );
-    return await prisma.complaint.findUnique({
-      where: { id },
-      select: {
-        id: true,
-        subject: true,
-        description: true,
-        mediaLink: true,
-        domain: true,
-        anonymous: true,
-        status: true,
-        createdAt: true,
-        updatedAt: true,
-          complainerId: true,
-        complainer: {
-          select: { id: true, name: true, email: true, role: true },
-        },
-        responses: {
-          select: {
-            id: true,
-            content: true,
-            mediaLink: true,
-            createdAt: true,
-            responderId: true,
-            responder: {
-              select: { name: true, email: true, role: true },
-            },
-          },
-          orderBy: { createdAt: "asc" },
-        },
-      },
-    });
-  }
+  // Invalidate caches
+  await cacheDelete(`complaint:${id}`);
+  await cacheDeletePattern("complaints:*");
 
   return updated;
 };
@@ -284,6 +279,10 @@ const deleteComplaint = async (complaintId) => {
   if (result.count === 0) {
     throw new ApiError(404, "Complaint not found or already deleted");
   }
+
+  // Invalidate caches
+  await cacheDelete(`complaint:${complaintId}`);
+  await cacheDeletePattern("complaints:*");
 
   return { deleted: true, count: result.count };
 };
