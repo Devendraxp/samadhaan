@@ -16,9 +16,11 @@
 6. [Local Setup](#-local-setup)
 7. [Running the Apps](#-running-the-apps)
 8. [API Integration Guide](#-api-integration-guide)
-9. [API Documentation](#-api-documentation)
-10. [Contributing](#-contributing)
-11. [Support & Contact](#-support--contact)
+9. [Pagination](#-pagination)
+10. [Caching](#-caching)
+11. [API Documentation](#-api-documentation)
+12. [Contributing](#-contributing)
+13. [Support & Contact](#-support--contact)
 
 ## 🔎 Overview
 
@@ -28,14 +30,16 @@ Samadhaan streamlines hostel complaint resolution by providing:
 - Anonymous complaint submission with media uploads.
 - Real-time status tracking, notifications, and response history.
 - A fully documented REST API with Swagger.
+- **In-memory Redis caching** for improved performance.
+- **Pagination support** across all list endpoints.
 
 ## 🌐 Hosted URLs
 
 | Surface   | URL |
 |-----------|-----|
-| Frontend  | https://hostel-samadhaan.vercel.app/ |
-| Backend   | https://hostel-samadhaan.onrender.com/ |
-| API Docs  | https://hostel-samadhaan.onrender.com/api-docs |
+| Frontend  | https://samadhaan.devendrajat.com |
+| Backend   | https://api-samadhaan.devendrajat.com |
+| API Docs  | https://api-samadhaan.devendrajat.com/api-docs |
 
 ## 📈 Repository Stats
 
@@ -54,7 +58,9 @@ samadhaan/
 │  │  ├─ controllers/
 │  │  ├─ routes/
 │  │  ├─ middlewares/
+│  │  ├─ services/    # Business logic with caching
 │  │  └─ utils/
+│  │     └─ redis.js  # Redis cache utilities
 │  ├─ prisma/
 │  │  ├─ schema.prisma
 │  │  └─ migrations/
@@ -83,7 +89,19 @@ cp .env.sample .env   # if provided
 cd ../server
 npm install
 cp .env.sample .env
-# Fill PORT, DATABASE_URL, SALT_ROUND, JWT secrets, etc.
+# Fill PORT, DATABASE_URL, SALT_ROUND, JWT secrets, Redis TTLs, etc.
+```
+
+### Environment Variables
+
+Add these Redis cache TTL settings to your `server/.env`:
+
+```bash
+# Redis Cache TTL (in seconds)
+REDIS_USER_TTL=3600           # 1 hour
+REDIS_COMPLAINT_TTL=1800      # 30 minutes
+REDIS_RESPONSE_TTL=1800       # 30 minutes
+REDIS_NOTIFICATION_TTL=900    # 15 minutes
 ```
 
 ## 🌱 Database Seeding & Sample Data
@@ -145,14 +163,14 @@ npx prisma migrate deploy   # or `migrate dev` during development
 
 ## 🔌 API Integration Guide
 
-- **Base URL**: `https://hostel-samadhaan.onrender.com/api/v1`
+- **Base URL**: `https://api-samadhaan.devendrajat.com/api/v1`
 - **Authentication**: JWT via `Authorization: Bearer <token>` header.
 - **Browser / cookie flows**: append `?source=web` to every auth-protected request so the backend issues and reads HTTP-only cookies correctly.
 
 ### Example (fetch complaint list as staff)
 
 ```ts
-fetch("https://hostel-samadhaan.onrender.com/api/v1/complaint?source=web", {
+fetch("https://api-samadhaan.devendrajat.com/api/v1/complaint?source=web&page=1&size=10", {
    method: "GET",
    headers: {
       "Content-Type": "application/json",
@@ -164,9 +182,118 @@ fetch("https://hostel-samadhaan.onrender.com/api/v1/complaint?source=web", {
 
 Additional sample requests live in [`server/apis.rest`](server/apis.rest).
 
+## 📄 Pagination
+
+All list endpoints support cursor-based pagination using `page` and `size` query parameters.
+
+### Query Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `page` | number | `1` | Page number (1-indexed) |
+| `size` | number | `10` | Number of items per page |
+
+### Paginated Endpoints
+
+| Endpoint | Description |
+|----------|-------------|
+| `GET /api/v1/complaint` | List all complaints |
+| `GET /api/v1/complaint/user` | List user's complaints |
+| `GET /api/v1/response` | List all responses |
+| `GET /api/v1/response/user` | List user's responses |
+| `GET /api/v1/response/complaint/:complaintId` | List responses for a complaint |
+| `GET /api/v1/notification` | List all notifications |
+| `GET /api/v1/notification/domain/:domain` | List notifications by domain |
+| `GET /api/v1/user` | List all users (admin only) |
+
+### Response Format
+
+```json
+{
+  "success": true,
+  "data": {
+    "complaints": [...],
+    "total": 120,
+    "page": 1,
+    "size": 10,
+    "totalPages": 12
+  }
+}
+```
+
+### Example Usage
+
+```bash
+# Get first page with 10 items
+GET /api/v1/complaint?page=1&size=10
+
+# Get third page with 20 items
+GET /api/v1/complaint?page=3&size=20
+```
+
+## 🗄️ Caching
+
+Samadhaan implements in-memory Redis caching using `ioredis-mock` for improved API response times and reduced database load.
+
+### Cache Strategy
+
+| Resource | Cache Key Pattern | Default TTL | Env Variable |
+|----------|-------------------|-------------|--------------|
+| User | `user:{id}`, `user:email:{email}` | 1 hour | `REDIS_USER_TTL` |
+| User List | `users:list:{skip}:{size}` | 1 hour | `REDIS_USER_TTL` |
+| Complaint | `complaint:{id}` | 30 mins | `REDIS_COMPLAINT_TTL` |
+| Complaint List | `complaints:all:{skip}:{size}` | 30 mins | `REDIS_COMPLAINT_TTL` |
+| User Complaints | `complaints:user:{userId}:{skip}:{size}` | 30 mins | `REDIS_COMPLAINT_TTL` |
+| Response | `response:{id}` | 30 mins | `REDIS_RESPONSE_TTL` |
+| Notification | `notification:{id}` | 15 mins | `REDIS_NOTIFICATION_TTL` |
+| Notification List | `notifications:all:{skip}:{size}` | 15 mins | `REDIS_NOTIFICATION_TTL` |
+
+### Cache Invalidation
+
+The cache is automatically invalidated when:
+
+- **Create**: New item cached, related list caches cleared
+- **Update**: Item cache deleted, related list caches cleared
+- **Delete**: Item cache deleted, related list caches cleared
+
+### Configuration
+
+Set TTL values in seconds via environment variables:
+
+```bash
+REDIS_USER_TTL=3600           # User cache: 1 hour
+REDIS_COMPLAINT_TTL=1800      # Complaint cache: 30 minutes
+REDIS_RESPONSE_TTL=1800       # Response cache: 30 minutes
+REDIS_NOTIFICATION_TTL=900    # Notification cache: 15 minutes
+```
+
+### Cache Utilities
+
+```javascript
+import { 
+  cacheGet, 
+  cacheSet, 
+  cacheDelete, 
+  cacheDeletePattern,
+  CACHE_TTL 
+} from "./utils/redis.js";
+
+// Get cached data
+const user = await cacheGet(`user:${userId}`);
+
+// Set with TTL
+await cacheSet(`user:${userId}`, userData, CACHE_TTL.USER);
+
+// Delete single key
+await cacheDelete(`user:${userId}`);
+
+// Delete by pattern (e.g., all user list caches)
+await cacheDeletePattern("users:list:*");
+```
+
 ## 📖 API Documentation
 
-- Live Swagger UI: **https://hostel-samadhaan.onrender.com/api-docs**
+- Live Swagger UI: **https://api-samadhaan.devendrajat.com/api-docs**
 - Describes every REST endpoint, payload, authentication requirement, and the `source` query parameter.
 
 ## 🔐 API Security Defaults
@@ -174,6 +301,7 @@ Additional sample requests live in [`server/apis.rest`](server/apis.rest).
 - **Per-IP throttling** – every request pipeline passes through [`express-rate-limit`](server/src/app.js) with a budget of **15 requests per second per IP**. Bursty clients will receive HTTP 429 responses with a friendly error payload.
 - **Secure HTTP headers** – [`helmet`](https://helmetjs.github.io/) is enabled globally to enforce HSTS, hide fingerprinting headers, and add sane defaults. Content-Security-Policy remains disabled to keep Swagger UI functional, but you can enable and customize it if you front static assets yourself.
 - **Trusted proxy awareness** – the Express app trusts the first upstream proxy so rate limiting works even when deployed behind Render/Vercel-style load balancers.
+- **In-memory caching** – Redis mock reduces database hits and improves response times with automatic cache invalidation.
 
 You can tweak these safety nets inside `server/src/app.js` if your deployment needs a stricter/slower profile.
 
