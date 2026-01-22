@@ -2,10 +2,7 @@
 node_modules/
 **/node_modules/
 
-#responses
-src/controllers/response.controller.js
-src/routes/response.route.js
-src/services/response.service.js
+
 
 # Logs
 npm-debug.log*
